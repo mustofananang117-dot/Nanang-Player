@@ -1,0 +1,7 @@
+{
+  "name": "Nanang Player",
+  "description": "Complete offline web music player with local file support, customizable theme and language system, playlist management, and 10-band Web Audio graphic equalizer.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
+

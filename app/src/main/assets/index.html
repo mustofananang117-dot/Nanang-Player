@@ -1,0 +1,3161 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>Nanang Player</title>
+  <style>
+    :root {
+      --primary-color: #00d2ff;
+      --primary-gradient: linear-gradient(135deg, #00d2ff 0%, #0077ff 100%);
+      --accent-glow: rgba(0, 210, 255, 0.4);
+      --bg-color: #0b0f19;
+      --card-bg: rgba(18, 24, 38, 0.85);
+      --card-border: rgba(255, 255, 255, 0.1);
+      --text-main: #f0f4f8;
+      --text-muted: #94a3b8;
+      --radius: 16px;
+      --radius-sm: 10px;
+      --safe-bottom: env(safe-area-inset-bottom, 0px);
+    }
+
+    body.light-theme {
+      --primary-color: #0284c7;
+      --primary-gradient: linear-gradient(135deg, #0284c7 0%, #2563eb 100%);
+      --accent-glow: rgba(2, 132, 199, 0.25);
+      --bg-color: #f1f5f9;
+      --card-bg: rgba(255, 255, 255, 0.92);
+      --card-border: rgba(0, 0, 0, 0.08);
+      --text-main: #0f172a;
+      --text-muted: #64748b;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      -webkit-tap-highlight-color: transparent;
+      user-select: none;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background-color: var(--bg-color);
+      color: var(--text-main);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow-x: hidden;
+      transition: background-color 0.3s ease, color 0.3s ease;
+    }
+
+    .bg-overlay {
+      position: fixed;
+      inset: 0;
+      background: radial-gradient(circle at top right, var(--accent-glow), transparent 60%),
+                  radial-gradient(circle at bottom left, rgba(0, 119, 255, 0.15), transparent 50%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .app-wrapper {
+      position: relative;
+      z-index: 1;
+      width: 100%;
+      max-width: 1100px;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+      padding: 8px 12px 20px;
+    }
+
+    /* Top Header */
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 8px 4px 10px;
+      margin-bottom: 6px;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .brand-icon {
+      width: 36px;
+      height: 36px;
+      border-radius: 10px;
+      background: var(--primary-gradient);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 4px 12px var(--accent-glow);
+    }
+
+    .brand-icon svg {
+      width: 22px;
+      height: 22px;
+      fill: #fff;
+    }
+
+    .brand-info h1 {
+      font-size: 1.15rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      line-height: 1.1;
+    }
+
+    .brand-info span {
+      font-size: 0.72rem;
+      color: var(--text-muted);
+    }
+
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .btn-icon {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      border: 1px solid var(--card-border);
+      background: var(--card-bg);
+      color: var(--text-main);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      backdrop-filter: blur(10px);
+      transition: all 0.2s ease;
+    }
+
+    .btn-icon:active {
+      transform: scale(0.92);
+      background: rgba(255, 255, 255, 0.15);
+    }
+
+    .btn-icon svg {
+      width: 20px;
+      height: 20px;
+      fill: currentColor;
+    }
+
+    .btn-scan-header {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 8px 14px;
+      border-radius: 20px;
+      background: var(--primary-gradient);
+      color: #fff;
+      border: none;
+      font-size: 0.8rem;
+      font-weight: 600;
+      cursor: pointer;
+      box-shadow: 0 4px 14px var(--accent-glow);
+      transition: transform 0.15s ease;
+    }
+
+    .btn-scan-header:active {
+      transform: scale(0.95);
+    }
+
+    .btn-scan-header svg {
+      width: 16px;
+      height: 16px;
+      fill: #fff;
+    }
+
+    /* Navigation Tabs */
+    .tabs-bar {
+      display: flex;
+      gap: 6px;
+      overflow-x: auto;
+      padding: 4px 2px 10px;
+      scrollbar-width: none;
+    }
+
+    .tabs-bar::-webkit-scrollbar {
+      display: none;
+    }
+
+    .tab-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 8px 14px;
+      border-radius: 20px;
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      color: var(--text-muted);
+      font-size: 0.82rem;
+      font-weight: 600;
+      white-space: nowrap;
+      cursor: pointer;
+      backdrop-filter: blur(8px);
+      transition: all 0.2s ease;
+    }
+
+    .tab-item svg {
+      width: 16px;
+      height: 16px;
+      fill: currentColor;
+    }
+
+    .tab-item.active {
+      background: var(--primary-color);
+      color: #fff;
+      border-color: var(--primary-color);
+      box-shadow: 0 4px 12px var(--accent-glow);
+    }
+
+    /* Cards & Panels */
+    .glass-card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: var(--radius);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      padding: 16px;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
+    }
+
+    /* Layout Management */
+    .content-area {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      margin-bottom: 60px; /* Space for mini-player */
+    }
+
+    .view-panel {
+      display: none;
+      flex-direction: column;
+      animation: fadeIn 0.25s ease-out;
+    }
+
+    .view-panel.active {
+      display: flex;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(6px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* View: Player (Pemutar) */
+    .player-card {
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 20px 16px 16px;
+      max-width: 480px;
+      margin: 0 auto;
+      width: 100%;
+    }
+
+    .art-disc-wrap {
+      position: relative;
+      width: 160px;
+      height: 160px;
+      margin: 8px auto 16px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5), 0 0 24px var(--accent-glow);
+      background: radial-gradient(circle, #252e42 0%, #101524 80%);
+      border: 3px solid rgba(255, 255, 255, 0.12);
+    }
+
+    .art-disc-wrap.playing {
+      animation: spinVinyl 12s linear infinite;
+    }
+
+    @keyframes spinVinyl {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+    }
+
+    .art-disc-center {
+      width: 52px;
+      height: 52px;
+      border-radius: 50%;
+      background: var(--primary-gradient);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: 4px solid #0f1523;
+      box-shadow: 0 0 12px var(--accent-glow);
+    }
+
+    .art-disc-center svg {
+      width: 24px;
+      height: 24px;
+      fill: #fff;
+    }
+
+    .track-title {
+      font-size: 1.15rem;
+      font-weight: 700;
+      margin-bottom: 4px;
+      width: 100%;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      padding: 0 8px;
+    }
+
+    .track-artist {
+      font-size: 0.82rem;
+      color: var(--text-muted);
+      margin-bottom: 12px;
+      width: 100%;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      padding: 0 8px;
+    }
+
+    /* Frequency Visualizer */
+    .visualizer-box {
+      width: 100%;
+      height: 48px;
+      background: rgba(0, 0, 0, 0.2);
+      border-radius: var(--radius-sm);
+      margin-bottom: 14px;
+      overflow: hidden;
+      position: relative;
+    }
+
+    #visualizerCanvas {
+      width: 100%;
+      height: 100%;
+      display: block;
+    }
+
+    /* Seekbar Progress */
+    .progress-section {
+      width: 100%;
+      margin-bottom: 12px;
+    }
+
+    .time-labels {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      margin-top: 4px;
+      font-variant-numeric: tabular-nums;
+    }
+
+    /* Sliders */
+    input[type="range"] {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 100%;
+      height: 6px;
+      border-radius: 3px;
+      background: rgba(255, 255, 255, 0.15);
+      outline: none;
+      cursor: pointer;
+    }
+
+    body.light-theme input[type="range"] {
+      background: rgba(0, 0, 0, 0.15);
+    }
+
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      background: var(--primary-color);
+      box-shadow: 0 0 8px var(--accent-glow);
+      cursor: pointer;
+    }
+
+    /* Controls */
+    .controls-row {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 14px;
+      width: 100%;
+      margin-bottom: 14px;
+    }
+
+    .btn-ctrl {
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid var(--card-border);
+      color: var(--text-main);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      position: relative;
+      transition: all 0.15s ease;
+    }
+
+    .btn-ctrl:active {
+      transform: scale(0.92);
+      background: rgba(255, 255, 255, 0.2);
+    }
+
+    .btn-ctrl.active {
+      color: var(--primary-color);
+      border-color: var(--primary-color);
+      background: rgba(0, 210, 255, 0.15);
+    }
+
+    .btn-ctrl.btn-main-play {
+      width: 58px;
+      height: 58px;
+      background: var(--primary-gradient);
+      color: #fff;
+      border: none;
+      box-shadow: 0 6px 20px var(--accent-glow);
+    }
+
+    .btn-ctrl.btn-main-play svg {
+      width: 26px;
+      height: 26px;
+      fill: #fff;
+    }
+
+    .btn-ctrl svg {
+      width: 20px;
+      height: 20px;
+      fill: currentColor;
+    }
+
+    /* Volume */
+    .volume-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      width: 100%;
+      max-width: 320px;
+      padding: 0 8px;
+    }
+
+    .volume-row span {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      width: 34px;
+      text-align: right;
+    }
+
+    /* View: Library (Pustaka & Scanner) */
+    .toolbar-box {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+
+    .action-buttons-row {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .btn-action {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 10px 14px;
+      border-radius: var(--radius-sm);
+      font-size: 0.85rem;
+      font-weight: 600;
+      cursor: pointer;
+      border: none;
+      transition: all 0.15s ease;
+    }
+
+    .btn-action:active {
+      transform: scale(0.95);
+    }
+
+    .btn-primary-action {
+      background: var(--primary-gradient);
+      color: #fff;
+      box-shadow: 0 4px 14px var(--accent-glow);
+      flex: 1 1 140px;
+      justify-content: center;
+    }
+
+    .btn-secondary-action {
+      background: rgba(255, 255, 255, 0.08);
+      color: var(--text-main);
+      border: 1px solid var(--card-border);
+      flex: 1 1 110px;
+      justify-content: center;
+    }
+
+    body.light-theme .btn-secondary-action {
+      background: rgba(0, 0, 0, 0.06);
+    }
+
+    .search-input {
+      width: 100%;
+      padding: 10px 14px;
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--card-border);
+      background: rgba(255, 255, 255, 0.06);
+      color: var(--text-main);
+      font-size: 0.88rem;
+      outline: none;
+    }
+
+    body.light-theme .search-input {
+      background: rgba(0, 0, 0, 0.04);
+    }
+
+    .scan-status-banner {
+      display: none;
+      align-items: center;
+      gap: 8px;
+      background: rgba(0, 210, 255, 0.12);
+      border: 1px solid var(--primary-color);
+      border-radius: var(--radius-sm);
+      padding: 10px 12px;
+      font-size: 0.82rem;
+      color: var(--text-main);
+      margin-bottom: 10px;
+    }
+
+    .scan-status-banner.visible {
+      display: flex;
+    }
+
+    .scan-spinner {
+      width: 18px;
+      height: 18px;
+      border: 2px solid var(--primary-color);
+      border-top-color: transparent;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    /* Track List */
+    .track-list {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      max-height: 460px;
+      overflow-y: auto;
+      padding-right: 2px;
+    }
+
+    .track-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 12px;
+      border-radius: var(--radius-sm);
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid transparent;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+
+    body.light-theme .track-item {
+      background: rgba(0, 0, 0, 0.03);
+    }
+
+    .track-item:active {
+      transform: scale(0.99);
+      background: rgba(255, 255, 255, 0.1);
+    }
+
+    .track-item.playing {
+      background: rgba(0, 210, 255, 0.12);
+      border-color: var(--primary-color);
+    }
+
+    .track-info-left {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      overflow: hidden;
+      flex: 1;
+    }
+
+    .track-num {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      width: 22px;
+      text-align: center;
+      font-weight: 600;
+      flex-shrink: 0;
+    }
+
+    .track-item.playing .track-num {
+      color: var(--primary-color);
+    }
+
+    .track-meta {
+      overflow: hidden;
+    }
+
+    .track-name {
+      font-size: 0.9rem;
+      font-weight: 600;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      margin-bottom: 2px;
+    }
+
+    .track-sub {
+      font-size: 0.74rem;
+      color: var(--text-muted);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .track-actions {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      flex-shrink: 0;
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 40px 16px;
+      color: var(--text-muted);
+    }
+
+    /* 10-Band Equalizer Console */
+    .eq-console-wrapper {
+      position: relative;
+      background: rgba(0, 0, 0, 0.28);
+      border: 1px solid var(--card-border);
+      border-radius: var(--radius);
+      padding: 16px 8px 12px;
+      margin-bottom: 14px;
+      display: flex;
+      align-items: stretch;
+      box-shadow: inset 0 2px 10px rgba(0, 0, 0, 0.3);
+    }
+
+    body.light-theme .eq-console-wrapper {
+      background: rgba(0, 0, 0, 0.04);
+      box-shadow: inset 0 1px 4px rgba(0, 0, 0, 0.08);
+    }
+
+    .eq-scale-labels {
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      height: 136px;
+      margin-top: 50px;
+      padding: 0 6px 0 2px;
+      font-size: 0.65rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      text-align: right;
+      user-select: none;
+      border-right: 1px dashed rgba(255, 255, 255, 0.12);
+      flex-shrink: 0;
+      width: 44px;
+    }
+
+    body.light-theme .eq-scale-labels {
+      border-right-color: rgba(0, 0, 0, 0.12);
+    }
+
+    .eq-bands-rack {
+      display: flex;
+      flex: 1;
+      overflow-x: auto;
+      gap: 6px;
+      padding: 0 4px 6px;
+      scrollbar-width: thin;
+      -webkit-overflow-scrolling: touch;
+      justify-content: space-between;
+    }
+
+    @media (max-width: 600px) {
+      .eq-bands-rack {
+        justify-content: flex-start;
+        gap: 8px;
+      }
+    }
+
+    .eq-channel {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-width: 50px;
+      flex: 1 0 50px;
+      padding: 6px 2px 8px;
+      border-radius: var(--radius-sm);
+      background: rgba(255, 255, 255, 0.02);
+      border: 1px solid transparent;
+      transition: all 0.15s ease;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+
+    .eq-channel:hover, .eq-channel.active-touch {
+      background: rgba(255, 255, 255, 0.06);
+      border-color: var(--card-border);
+    }
+
+    .eq-db-badge {
+      font-size: 0.72rem;
+      font-weight: 700;
+      color: var(--text-muted);
+      margin-bottom: 6px;
+      min-height: 22px;
+      min-width: 44px;
+      padding: 2px 4px;
+      border-radius: 4px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      text-align: center;
+      transition: all 0.15s ease;
+      cursor: pointer;
+      user-select: none;
+      white-space: nowrap;
+    }
+
+    body.light-theme .eq-db-badge {
+      background: rgba(0, 0, 0, 0.04);
+      border-color: rgba(0, 0, 0, 0.08);
+    }
+
+    .eq-db-badge:active {
+      transform: scale(0.95);
+      background: rgba(255, 255, 255, 0.15);
+    }
+
+    .eq-db-badge.boost {
+      color: var(--primary-color);
+      border-color: var(--primary-color);
+      font-weight: 800;
+      background: rgba(0, 210, 255, 0.12);
+    }
+
+    .eq-db-badge.cut {
+      color: #ff6b6b;
+      border-color: rgba(255, 107, 107, 0.5);
+      font-weight: 800;
+      background: rgba(255, 107, 107, 0.12);
+    }
+
+    .eq-btn-step {
+      width: 28px;
+      height: 22px;
+      border-radius: 6px;
+      border: 1px solid var(--card-border);
+      background: rgba(255, 255, 255, 0.06);
+      color: var(--text-main);
+      font-size: 0.95rem;
+      font-weight: 800;
+      line-height: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.12s ease;
+      user-select: none;
+      touch-action: manipulation;
+    }
+
+    body.light-theme .eq-btn-step {
+      background: rgba(0, 0, 0, 0.05);
+    }
+
+    .eq-btn-step:active {
+      transform: scale(0.9);
+      background: var(--primary-color);
+      color: #000;
+      border-color: var(--primary-color);
+    }
+
+    /* Precision Slider Fader Container */
+    .eq-slider-container {
+      height: 140px;
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      touch-action: none;
+      padding: 6px 0;
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .eq-track-groove {
+      position: relative;
+      width: 6px;
+      height: 128px;
+      background: rgba(255, 255, 255, 0.12);
+      border-radius: 4px;
+      pointer-events: none;
+    }
+
+    body.light-theme .eq-track-groove {
+      background: rgba(0, 0, 0, 0.15);
+    }
+
+    .eq-zero-line {
+      position: absolute;
+      top: 50%;
+      left: -8px;
+      right: -8px;
+      height: 2px;
+      background: rgba(255, 255, 255, 0.4);
+      transform: translateY(-50%);
+      border-radius: 1px;
+      z-index: 1;
+    }
+
+    body.light-theme .eq-zero-line {
+      background: rgba(0, 0, 0, 0.35);
+    }
+
+    .eq-track-fill {
+      position: absolute;
+      left: 0;
+      width: 100%;
+      border-radius: 3px;
+      transition: none;
+      z-index: 1;
+    }
+
+    .eq-thumb {
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%, -50%);
+      width: 32px;
+      height: 18px;
+      border-radius: 5px;
+      background: linear-gradient(180deg, #374151 0%, #1f2937 100%);
+      border: 1.5px solid rgba(255, 255, 255, 0.5);
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.6);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 3;
+      pointer-events: none;
+      transition: border-color 0.15s, box-shadow 0.15s, transform 0.1s;
+    }
+
+    body.light-theme .eq-thumb {
+      background: linear-gradient(180deg, #f9fafb 0%, #d1d5db 100%);
+      border-color: rgba(0, 0, 0, 0.25);
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+    }
+
+    .eq-thumb-grip {
+      width: 14px;
+      height: 2px;
+      background: var(--primary-color);
+      border-radius: 1px;
+      box-shadow: 0 0 4px var(--primary-color);
+    }
+
+    .eq-slider-container.dragging .eq-thumb {
+      border-color: var(--primary-color);
+      box-shadow: 0 0 10px var(--primary-color);
+      transform: translate(-50%, -50%) scale(1.08);
+    }
+
+    .eq-thumb-bubble {
+      position: absolute;
+      bottom: 24px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: var(--primary-color);
+      color: #0b0f19;
+      font-size: 0.7rem;
+      font-weight: 800;
+      padding: 2px 6px;
+      border-radius: 4px;
+      white-space: nowrap;
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 0.15s ease;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.5);
+      z-index: 10;
+    }
+
+    .eq-slider-container.dragging .eq-thumb-bubble,
+    .eq-channel:hover .eq-thumb-bubble {
+      opacity: 1;
+    }
+
+    .eq-slider-native {
+      position: absolute;
+      opacity: 0;
+      pointer-events: none;
+      width: 1px;
+      height: 1px;
+      margin: 0;
+    }
+
+    .eq-freq-badge {
+      margin-top: 8px;
+      font-size: 0.76rem;
+      font-weight: 700;
+      color: var(--text-main);
+      text-align: center;
+      letter-spacing: -0.01em;
+    }
+
+    .eq-band-name {
+      font-size: 0.64rem;
+      color: var(--text-muted);
+      text-align: center;
+      margin-top: 2px;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+
+    .chips-row {
+      display: flex;
+      gap: 8px;
+      overflow-x: auto;
+      padding-bottom: 8px;
+      margin-bottom: 14px;
+    }
+
+    .chip-btn {
+      padding: 6px 14px;
+      border-radius: 20px;
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid var(--card-border);
+      color: var(--text-main);
+      font-size: 0.8rem;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+
+    .chip-btn.active {
+      background: var(--primary-color);
+      color: #fff;
+    }
+
+    /* Settings & Forms */
+    .form-group {
+      margin-bottom: 14px;
+    }
+
+    .form-label {
+      display: block;
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      margin-bottom: 6px;
+    }
+
+    .color-pickers-row {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+    }
+
+    .color-box {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .color-input {
+      width: 100%;
+      height: 38px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      background: none;
+    }
+
+    .text-input {
+      width: 100%;
+      padding: 10px;
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--card-border);
+      background: rgba(255, 255, 255, 0.06);
+      color: var(--text-main);
+      font-size: 0.88rem;
+      outline: none;
+    }
+
+    /* Persistent Bottom Mini Player */
+    .mini-player-bar {
+      position: fixed;
+      bottom: calc(10px + var(--safe-bottom));
+      left: 12px;
+      right: 12px;
+      max-width: 1076px;
+      margin: 0 auto;
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: var(--radius);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      padding: 8px 14px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+      z-index: 50;
+      cursor: pointer;
+    }
+
+    .mini-player-info {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      overflow: hidden;
+      flex: 1;
+    }
+
+    .mini-art {
+      width: 36px;
+      height: 36px;
+      border-radius: 8px;
+      background: var(--primary-gradient);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .mini-art svg {
+      width: 20px;
+      height: 20px;
+      fill: #fff;
+    }
+
+    .mini-meta {
+      overflow: hidden;
+    }
+
+    .mini-title {
+      font-size: 0.85rem;
+      font-weight: 600;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .mini-artist {
+      font-size: 0.72rem;
+      color: var(--text-muted);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .mini-controls {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-shrink: 0;
+    }
+
+    .mini-btn {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      border: none;
+      background: rgba(255, 255, 255, 0.1);
+      color: var(--text-main);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+    }
+
+    .mini-btn:active {
+      transform: scale(0.92);
+    }
+
+    /* Modal */
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.65);
+      backdrop-filter: blur(8px);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 100;
+      padding: 16px;
+    }
+
+    .modal-backdrop.open {
+      display: flex;
+    }
+
+    .modal-box {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: var(--radius);
+      padding: 20px;
+      width: 100%;
+      max-width: 400px;
+      box-shadow: 0 16px 40px rgba(0, 0, 0, 0.5);
+    }
+
+    /* Widescreen / Tablet Layout */
+    @media (min-width: 860px) {
+      .content-area {
+        display: grid;
+        grid-template-columns: 380px 1fr;
+        gap: 20px;
+        margin-bottom: 0;
+      }
+      .view-panel {
+        display: flex !important;
+      }
+      #viewPlayer {
+        grid-column: 1;
+      }
+      #viewTabsContainer {
+        grid-column: 2;
+      }
+      .mini-player-bar {
+        display: none !important;
+      }
+    }
+
+    /* Toast Notification */
+    .toast-notice {
+      position: fixed;
+      bottom: 84px;
+      left: 50%;
+      transform: translateX(-50%) translateY(20px);
+      background: var(--card-bg);
+      border: 1px solid var(--primary-color);
+      color: var(--text-main);
+      padding: 10px 18px;
+      border-radius: 24px;
+      font-size: 0.84rem;
+      font-weight: 500;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.45);
+      backdrop-filter: blur(14px);
+      z-index: 9999;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.25s ease, transform 0.25s ease;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      max-width: 90%;
+      text-align: center;
+    }
+    .toast-notice.visible {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+  </style>
+</head>
+<body>
+  <div class="bg-overlay" id="bgOverlay"></div>
+
+  <div class="app-wrapper">
+    <!-- Top Header -->
+    <header>
+      <div class="brand">
+        <div class="brand-icon">
+          <svg viewBox="0 0 24 24"><path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z"/></svg>
+        </div>
+        <div class="brand-info">
+          <h1 id="headerAppName">Nanang Player</h1>
+          <span id="lblOfflineStatus">Pemutar Musik Offline</span>
+        </div>
+      </div>
+      <div class="header-actions">
+        <button class="btn-scan-header" id="btnHeaderScan" title="Pindai Berkas Audio MP3">
+          <svg viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
+          <span id="txtBtnScanHeader">Pindai MP3</span>
+        </button>
+        <button class="btn-icon" id="btnThemeToggle" title="Ganti Tema">
+          <svg viewBox="0 0 24 24"><path d="M12 3c-4.97 0-9 4.03-9 9s4.03 9 9 9 9-4.03 9-9c0-.46-.04-.92-.1-1.36-.98 1.37-2.58 2.26-4.4 2.26-2.98 0-5.4-2.42-5.4-5.4 0-1.81.89-3.42 2.26-4.4-.44-.06-.9-.1-1.36-.1z"/></svg>
+        </button>
+      </div>
+    </header>
+
+    <!-- Navigation Tabs -->
+    <div class="tabs-bar">
+      <button class="tab-item active" data-view="viewPlayer" id="navPlayer">
+        <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 14.5v-9l6 4.5-6 4.5z"/></svg>
+        <span id="txtNavPlayer">Pemutar</span>
+      </button>
+      <button class="tab-item" data-view="viewLibrary" id="navLibrary">
+        <svg viewBox="0 0 24 24"><path d="M4 6H2v14c0 1.1.9 2 2 2h14v-2H4V6zm16-4H8c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 14H8V4h12v12z"/></svg>
+        <span id="txtNavLibrary">Pustaka</span>
+      </button>
+      <button class="tab-item" data-view="viewPlaylists" id="navPlaylists">
+        <svg viewBox="0 0 24 24"><path d="M19 9H2v2h17V9zm0-4H2v2h17V5zM2 15h11v-2H2v2zm17-2v6l5-3-5-3z"/></svg>
+        <span id="txtNavPlaylists">Playlist</span>
+      </button>
+      <button class="tab-item" data-view="viewEqualizer" id="navEqualizer">
+        <svg viewBox="0 0 24 24"><path d="M10 20h4V4h-4v16zm-6 0h4v-8H4v8zM16 9v11h4V9h-4z"/></svg>
+        <span id="txtNavEqualizer">Equalizer</span>
+      </button>
+      <button class="tab-item" data-view="viewSettings" id="navSettings">
+        <svg viewBox="0 0 24 24"><path d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/></svg>
+        <span id="txtNavSettings">Tema</span>
+      </button>
+    </div>
+
+    <!-- Main Content Area -->
+    <main class="content-area">
+      <!-- VIEW 1: PLAYER -->
+      <section class="glass-card player-card view-panel active" id="viewPlayer">
+        <div class="art-disc-wrap" id="vinylDisc">
+          <div class="art-disc-center">
+            <svg viewBox="0 0 24 24"><path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z"/></svg>
+          </div>
+        </div>
+
+        <h2 class="track-title" id="nowPlayingTitle">Pilih Lagu</h2>
+        <p class="track-artist" id="nowPlayingArtist">Pindai berkas MP3 atau pilih audio lokal</p>
+
+        <!-- Frequency visualizer -->
+        <div class="visualizer-box">
+          <canvas id="visualizerCanvas"></canvas>
+        </div>
+
+        <!-- Progress Seekbar -->
+        <div class="progress-section">
+          <input type="range" id="seekBar" min="0" max="100" value="0" step="0.1">
+          <div class="time-labels">
+            <span id="timeElapsed">0:00</span>
+            <span id="timeTotal">0:00</span>
+          </div>
+        </div>
+
+        <!-- Playback Controls -->
+        <div class="controls-row">
+          <button class="btn-ctrl" id="btnShuffle" title="Mode Acak">
+            <svg viewBox="0 0 24 24"><path d="M10.59 9.17L5.41 4 4 5.41l5.17 5.17 1.42-1.41zM14.5 4l2.04 2.04L4 18.59 5.41 20 17.96 7.46 20 9.5V4h-5.5zm.33 9.41l-1.41 1.41 3.13 3.13L14.5 20H20v-5.5l-2.04 2.04-3.13-3.13z"/></svg>
+          </button>
+          <button class="btn-ctrl" id="btnPrev" title="Lagu Sebelumnya">
+            <svg viewBox="0 0 24 24"><path d="M6 6h2v12H6zm3.5 6l8.5 6V6z"/></svg>
+          </button>
+          <button class="btn-ctrl btn-main-play" id="btnPlay" title="Putar / Jeda">
+            <svg id="playIcon" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+            <svg id="pauseIcon" style="display:none;" viewBox="0 0 24 24"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
+          </button>
+          <button class="btn-ctrl" id="btnNext" title="Lagu Berikutnya">
+            <svg viewBox="0 0 24 24"><path d="M6 18l8.5-6L6 6v12zM16 6v12h2V6h-2z"/></svg>
+          </button>
+          <button class="btn-ctrl" id="btnRepeat" title="Mode Ulang">
+            <svg viewBox="0 0 24 24"><path d="M7 7h10v3l4-4-4-4v3H5v6h2V7zm10 10H7v-3l-4 4 4 4v-3h12v-6h-2v4z"/></svg>
+            <span id="repeatBadge" style="position: absolute; font-size: 10px; font-weight: bold; top: 6px; right: 8px; display: none;">1</span>
+          </button>
+        </div>
+
+        <!-- Volume Row -->
+        <div class="volume-row">
+          <button class="btn-icon" id="btnMute" style="width: 34px; height: 34px;" title="Bisukan Suara">
+            <svg id="volIcon" viewBox="0 0 24 24"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/></svg>
+          </button>
+          <input type="range" id="volSlider" min="0" max="1" step="0.01" value="0.85">
+          <span id="volLabel">85%</span>
+        </div>
+      </section>
+
+      <!-- VIEW 2: LIBRARY (Pustaka & Scanner MP3) -->
+      <section class="glass-card view-panel" id="viewLibrary">
+        <div class="toolbar-box">
+          <div class="action-buttons-row">
+            <button class="btn-action btn-primary-action" id="btnTriggerScan">
+              <svg style="width: 18px; height: 18px; fill: currentColor;" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
+              <span id="lblScanAction">Pindai File Audio (MP3)</span>
+            </button>
+            <label class="btn-action btn-secondary-action" for="fileInput" id="btnUploadLabel">
+              <svg style="width: 16px; height: 16px; fill: currentColor;" viewBox="0 0 24 24"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
+              <span id="lblAddFiles">Pilih File</span>
+            </label>
+            <input type="file" id="fileInput" multiple accept="audio/mp3,audio/wav,audio/ogg,audio/*" style="display: none;">
+            <button class="btn-action btn-secondary-action" id="btnLoadDemoTracks">
+              <span id="lblAddDemo">Lagu Demo</span>
+            </button>
+          </div>
+
+          <input type="text" id="librarySearch" class="search-input" placeholder="Cari lagu atau artis...">
+        </div>
+
+        <!-- Scanning Status Banner -->
+        <div class="scan-status-banner" id="scanStatusBanner">
+          <div class="scan-spinner"></div>
+          <span id="scanStatusText">Memindai memori perangkat untuk file MP3...</span>
+        </div>
+
+        <div class="track-list" id="libraryTrackList">
+          <div class="empty-state" id="libraryEmptyState">
+            <p id="txtEmptyLibrary">Belum ada lagu yang dimuat.</p>
+            <p style="font-size: 0.78rem; margin-top: 6px;">Ketuk "Pindai File Audio (MP3)" untuk mencari otomatis semua lagu di HP Anda!</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- VIEW 3: PLAYLISTS -->
+      <section class="glass-card view-panel" id="viewPlaylists">
+        <div class="toolbar-box">
+          <div style="display: flex; gap: 8px;">
+            <input type="text" id="newPlaylistName" class="search-input" placeholder="Nama Playlist Baru...">
+            <button class="btn-action btn-primary-action" id="btnCreatePlaylist" style="flex: 0 0 90px;">
+              <span id="lblCreatePlaylist">Buat</span>
+            </button>
+          </div>
+        </div>
+
+        <div id="playlistContainer" style="display: flex; flex-direction: column; gap: 10px; max-height: 480px; overflow-y: auto;"></div>
+      </section>
+
+      <!-- VIEW 4: EQUALIZER -->
+      <section class="glass-card view-panel" id="viewEqualizer">
+        <div class="form-group" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;">
+          <div>
+            <label class="form-label" id="lblEqPresets" style="margin-bottom: 0;">Preset Suara (10-Band EQ)</label>
+            <span style="font-size: 0.72rem; color: var(--text-muted);">Kontrol vertikal presisi 31Hz - 16kHz</span>
+          </div>
+          <button class="btn-action btn-secondary-action" id="btnResetEq" style="padding: 6px 12px; font-size: 0.78rem; flex: 0 0 auto;">
+            <svg style="width: 14px; height: 14px; fill: currentColor;" viewBox="0 0 24 24"><path d="M12 5V1L7 6l5 5V7c3.31 0 6 2.69 6 6s-2.69 6-6 6-6-2.69-6-6H4c0 4.42 3.58 8 8 8s8-3.58 8-8-3.58-8-8-8z"/></svg>
+            <span id="lblResetEq">Atur Ulang EQ</span>
+          </button>
+        </div>
+
+        <div class="chips-row" id="eqPresetsRow">
+          <button class="chip-btn active" data-preset="flat">Flat</button>
+          <button class="chip-btn" data-preset="bass">Bass Boost</button>
+          <button class="chip-btn" data-preset="pop">Pop</button>
+          <button class="chip-btn" data-preset="rock">Rock</button>
+          <button class="chip-btn" data-preset="jazz">Jazz</button>
+          <button class="chip-btn" data-preset="vocal">Vokal</button>
+          <button class="chip-btn" data-preset="edm">EDM</button>
+          <button class="chip-btn" data-preset="acoustic">Akustik</button>
+        </div>
+
+        <!-- 10-Band Vertical Equalizer Console -->
+        <div class="eq-console-wrapper">
+          <div class="eq-scale-labels">
+            <span>+12dB</span>
+            <span>+6dB</span>
+            <span>0dB</span>
+            <span>-6dB</span>
+            <span>-12dB</span>
+          </div>
+          <div class="eq-bands-rack" id="eqBandsRack">
+            <!-- Band 0: 31Hz -->
+            <div class="eq-channel" id="eqChan0" data-band="0">
+              <span class="eq-db-badge" id="eqVal0" title="Ketuk untuk input nilai presisi (dB) / Ketuk 2x untuk reset" onclick="openBandPrecisionModal(0)">0.0 dB</span>
+              <button type="button" class="eq-btn-step" data-action="plus" data-band="0" title="Tambah 0.5 dB">+</button>
+              <div class="eq-slider-container" id="eqSliderBox0" data-band="0">
+                <div class="eq-track-groove">
+                  <div class="eq-zero-line"></div>
+                  <div class="eq-track-fill" id="eqFill0"></div>
+                  <div class="eq-thumb" id="eqThumb0">
+                    <span class="eq-thumb-grip"></span>
+                    <div class="eq-thumb-bubble" id="eqBubble0">0.0 dB</div>
+                  </div>
+                </div>
+                <input type="range" class="eq-slider-native" id="eqBand0" min="-12" max="12" value="0" step="0.1" aria-label="Gain 31Hz">
+              </div>
+              <button type="button" class="eq-btn-step" data-action="minus" data-band="0" title="Kurang 0.5 dB">−</button>
+              <span class="eq-freq-badge">31Hz</span>
+              <span class="eq-band-name">Sub</span>
+            </div>
+
+            <!-- Band 1: 63Hz -->
+            <div class="eq-channel" id="eqChan1" data-band="1">
+              <span class="eq-db-badge" id="eqVal1" title="Ketuk untuk input nilai presisi (dB) / Ketuk 2x untuk reset" onclick="openBandPrecisionModal(1)">0.0 dB</span>
+              <button type="button" class="eq-btn-step" data-action="plus" data-band="1" title="Tambah 0.5 dB">+</button>
+              <div class="eq-slider-container" id="eqSliderBox1" data-band="1">
+                <div class="eq-track-groove">
+                  <div class="eq-zero-line"></div>
+                  <div class="eq-track-fill" id="eqFill1"></div>
+                  <div class="eq-thumb" id="eqThumb1">
+                    <span class="eq-thumb-grip"></span>
+                    <div class="eq-thumb-bubble" id="eqBubble1">0.0 dB</div>
+                  </div>
+                </div>
+                <input type="range" class="eq-slider-native" id="eqBand1" min="-12" max="12" value="0" step="0.1" aria-label="Gain 63Hz">
+              </div>
+              <button type="button" class="eq-btn-step" data-action="minus" data-band="1" title="Kurang 0.5 dB">−</button>
+              <span class="eq-freq-badge">63Hz</span>
+              <span class="eq-band-name">Bass</span>
+            </div>
+
+            <!-- Band 2: 125Hz -->
+            <div class="eq-channel" id="eqChan2" data-band="2">
+              <span class="eq-db-badge" id="eqVal2" title="Ketuk untuk input nilai presisi (dB) / Ketuk 2x untuk reset" onclick="openBandPrecisionModal(2)">0.0 dB</span>
+              <button type="button" class="eq-btn-step" data-action="plus" data-band="2" title="Tambah 0.5 dB">+</button>
+              <div class="eq-slider-container" id="eqSliderBox2" data-band="2">
+                <div class="eq-track-groove">
+                  <div class="eq-zero-line"></div>
+                  <div class="eq-track-fill" id="eqFill2"></div>
+                  <div class="eq-thumb" id="eqThumb2">
+                    <span class="eq-thumb-grip"></span>
+                    <div class="eq-thumb-bubble" id="eqBubble2">0.0 dB</div>
+                  </div>
+                </div>
+                <input type="range" class="eq-slider-native" id="eqBand2" min="-12" max="12" value="0" step="0.1" aria-label="Gain 125Hz">
+              </div>
+              <button type="button" class="eq-btn-step" data-action="minus" data-band="2" title="Kurang 0.5 dB">−</button>
+              <span class="eq-freq-badge">125Hz</span>
+              <span class="eq-band-name">Low</span>
+            </div>
+
+            <!-- Band 3: 250Hz -->
+            <div class="eq-channel" id="eqChan3" data-band="3">
+              <span class="eq-db-badge" id="eqVal3" title="Ketuk untuk input nilai presisi (dB) / Ketuk 2x untuk reset" onclick="openBandPrecisionModal(3)">0.0 dB</span>
+              <button type="button" class="eq-btn-step" data-action="plus" data-band="3" title="Tambah 0.5 dB">+</button>
+              <div class="eq-slider-container" id="eqSliderBox3" data-band="3">
+                <div class="eq-track-groove">
+                  <div class="eq-zero-line"></div>
+                  <div class="eq-track-fill" id="eqFill3"></div>
+                  <div class="eq-thumb" id="eqThumb3">
+                    <span class="eq-thumb-grip"></span>
+                    <div class="eq-thumb-bubble" id="eqBubble3">0.0 dB</div>
+                  </div>
+                </div>
+                <input type="range" class="eq-slider-native" id="eqBand3" min="-12" max="12" value="0" step="0.1" aria-label="Gain 250Hz">
+              </div>
+              <button type="button" class="eq-btn-step" data-action="minus" data-band="3" title="Kurang 0.5 dB">−</button>
+              <span class="eq-freq-badge">250Hz</span>
+              <span class="eq-band-name">Low-Mid</span>
+            </div>
+
+            <!-- Band 4: 500Hz -->
+            <div class="eq-channel" id="eqChan4" data-band="4">
+              <span class="eq-db-badge" id="eqVal4" title="Ketuk untuk input nilai presisi (dB) / Ketuk 2x untuk reset" onclick="openBandPrecisionModal(4)">0.0 dB</span>
+              <button type="button" class="eq-btn-step" data-action="plus" data-band="4" title="Tambah 0.5 dB">+</button>
+              <div class="eq-slider-container" id="eqSliderBox4" data-band="4">
+                <div class="eq-track-groove">
+                  <div class="eq-zero-line"></div>
+                  <div class="eq-track-fill" id="eqFill4"></div>
+                  <div class="eq-thumb" id="eqThumb4">
+                    <span class="eq-thumb-grip"></span>
+                    <div class="eq-thumb-bubble" id="eqBubble4">0.0 dB</div>
+                  </div>
+                </div>
+                <input type="range" class="eq-slider-native" id="eqBand4" min="-12" max="12" value="0" step="0.1" aria-label="Gain 500Hz">
+              </div>
+              <button type="button" class="eq-btn-step" data-action="minus" data-band="4" title="Kurang 0.5 dB">−</button>
+              <span class="eq-freq-badge">500Hz</span>
+              <span class="eq-band-name">Mid</span>
+            </div>
+
+            <!-- Band 5: 1kHz -->
+            <div class="eq-channel" id="eqChan5" data-band="5">
+              <span class="eq-db-badge" id="eqVal5" title="Ketuk untuk input nilai presisi (dB) / Ketuk 2x untuk reset" onclick="openBandPrecisionModal(5)">0.0 dB</span>
+              <button type="button" class="eq-btn-step" data-action="plus" data-band="5" title="Tambah 0.5 dB">+</button>
+              <div class="eq-slider-container" id="eqSliderBox5" data-band="5">
+                <div class="eq-track-groove">
+                  <div class="eq-zero-line"></div>
+                  <div class="eq-track-fill" id="eqFill5"></div>
+                  <div class="eq-thumb" id="eqThumb5">
+                    <span class="eq-thumb-grip"></span>
+                    <div class="eq-thumb-bubble" id="eqBubble5">0.0 dB</div>
+                  </div>
+                </div>
+                <input type="range" class="eq-slider-native" id="eqBand5" min="-12" max="12" value="0" step="0.1" aria-label="Gain 1kHz">
+              </div>
+              <button type="button" class="eq-btn-step" data-action="minus" data-band="5" title="Kurang 0.5 dB">−</button>
+              <span class="eq-freq-badge">1kHz</span>
+              <span class="eq-band-name">High-Mid</span>
+            </div>
+
+            <!-- Band 6: 2kHz -->
+            <div class="eq-channel" id="eqChan6" data-band="6">
+              <span class="eq-db-badge" id="eqVal6" title="Ketuk untuk input nilai presisi (dB) / Ketuk 2x untuk reset" onclick="openBandPrecisionModal(6)">0.0 dB</span>
+              <button type="button" class="eq-btn-step" data-action="plus" data-band="6" title="Tambah 0.5 dB">+</button>
+              <div class="eq-slider-container" id="eqSliderBox6" data-band="6">
+                <div class="eq-track-groove">
+                  <div class="eq-zero-line"></div>
+                  <div class="eq-track-fill" id="eqFill6"></div>
+                  <div class="eq-thumb" id="eqThumb6">
+                    <span class="eq-thumb-grip"></span>
+                    <div class="eq-thumb-bubble" id="eqBubble6">0.0 dB</div>
+                  </div>
+                </div>
+                <input type="range" class="eq-slider-native" id="eqBand6" min="-12" max="12" value="0" step="0.1" aria-label="Gain 2kHz">
+              </div>
+              <button type="button" class="eq-btn-step" data-action="minus" data-band="6" title="Kurang 0.5 dB">−</button>
+              <span class="eq-freq-badge">2kHz</span>
+              <span class="eq-band-name">Presence</span>
+            </div>
+
+            <!-- Band 7: 4kHz -->
+            <div class="eq-channel" id="eqChan7" data-band="7">
+              <span class="eq-db-badge" id="eqVal7" title="Ketuk untuk input nilai presisi (dB) / Ketuk 2x untuk reset" onclick="openBandPrecisionModal(7)">0.0 dB</span>
+              <button type="button" class="eq-btn-step" data-action="plus" data-band="7" title="Tambah 0.5 dB">+</button>
+              <div class="eq-slider-container" id="eqSliderBox7" data-band="7">
+                <div class="eq-track-groove">
+                  <div class="eq-zero-line"></div>
+                  <div class="eq-track-fill" id="eqFill7"></div>
+                  <div class="eq-thumb" id="eqThumb7">
+                    <span class="eq-thumb-grip"></span>
+                    <div class="eq-thumb-bubble" id="eqBubble7">0.0 dB</div>
+                  </div>
+                </div>
+                <input type="range" class="eq-slider-native" id="eqBand7" min="-12" max="12" value="0" step="0.1" aria-label="Gain 4kHz">
+              </div>
+              <button type="button" class="eq-btn-step" data-action="minus" data-band="7" title="Kurang 0.5 dB">−</button>
+              <span class="eq-freq-badge">4kHz</span>
+              <span class="eq-band-name">Treble</span>
+            </div>
+
+            <!-- Band 8: 8kHz -->
+            <div class="eq-channel" id="eqChan8" data-band="8">
+              <span class="eq-db-badge" id="eqVal8" title="Ketuk untuk input nilai presisi (dB) / Ketuk 2x untuk reset" onclick="openBandPrecisionModal(8)">0.0 dB</span>
+              <button type="button" class="eq-btn-step" data-action="plus" data-band="8" title="Tambah 0.5 dB">+</button>
+              <div class="eq-slider-container" id="eqSliderBox8" data-band="8">
+                <div class="eq-track-groove">
+                  <div class="eq-zero-line"></div>
+                  <div class="eq-track-fill" id="eqFill8"></div>
+                  <div class="eq-thumb" id="eqThumb8">
+                    <span class="eq-thumb-grip"></span>
+                    <div class="eq-thumb-bubble" id="eqBubble8">0.0 dB</div>
+                  </div>
+                </div>
+                <input type="range" class="eq-slider-native" id="eqBand8" min="-12" max="12" value="0" step="0.1" aria-label="Gain 8kHz">
+              </div>
+              <button type="button" class="eq-btn-step" data-action="minus" data-band="8" title="Kurang 0.5 dB">−</button>
+              <span class="eq-freq-badge">8kHz</span>
+              <span class="eq-band-name">High</span>
+            </div>
+
+            <!-- Band 9: 16kHz -->
+            <div class="eq-channel" id="eqChan9" data-band="9">
+              <span class="eq-db-badge" id="eqVal9" title="Ketuk untuk input nilai presisi (dB) / Ketuk 2x untuk reset" onclick="openBandPrecisionModal(9)">0.0 dB</span>
+              <button type="button" class="eq-btn-step" data-action="plus" data-band="9" title="Tambah 0.5 dB">+</button>
+              <div class="eq-slider-container" id="eqSliderBox9" data-band="9">
+                <div class="eq-track-groove">
+                  <div class="eq-zero-line"></div>
+                  <div class="eq-track-fill" id="eqFill9"></div>
+                  <div class="eq-thumb" id="eqThumb9">
+                    <span class="eq-thumb-grip"></span>
+                    <div class="eq-thumb-bubble" id="eqBubble9">0.0 dB</div>
+                  </div>
+                </div>
+                <input type="range" class="eq-slider-native" id="eqBand9" min="-12" max="12" value="0" step="0.1" aria-label="Gain 16kHz">
+              </div>
+              <button type="button" class="eq-btn-step" data-action="minus" data-band="9" title="Kurang 0.5 dB">−</button>
+              <span class="eq-freq-badge">16kHz</span>
+              <span class="eq-band-name">Air</span>
+            </div>
+          </div>
+        </div>
+
+        <p style="font-size: 0.74rem; color: var(--text-muted); text-align: center; margin-top: 2px;" id="lblEqTip">
+          Geser fader vertikal atau gunakan <b>+</b> / <b>−</b> untuk atur presisi. Ketuk angka dB untuk input nilai langsung. Ketuk 2x untuk reset 0.0 dB.
+        </p>
+      </section>
+
+      <!-- VIEW 5: SETTINGS / THEME -->
+      <section class="glass-card view-panel" id="viewSettings">
+        <div class="form-group">
+          <label class="form-label" id="lblThemePresets">Pilihan Tema Cepat</label>
+          <div class="chips-row">
+            <button class="chip-btn" onclick="applyThemePreset('#00d2ff', '#0b0f19', 'rgba(18, 24, 38, 0.85)', false)">Neon Cyan</button>
+            <button class="chip-btn" onclick="applyThemePreset('#a855f7', '#0f0c1b', 'rgba(32, 22, 54, 0.85)', false)">Royal Violet</button>
+            <button class="chip-btn" onclick="applyThemePreset('#10b981', '#061713', 'rgba(12, 38, 30, 0.85)', false)">Emerald</button>
+            <button class="chip-btn" onclick="applyThemePreset('#f97316', '#1a0f0a', 'rgba(45, 23, 15, 0.85)', false)">Sunset Amber</button>
+            <button class="chip-btn" onclick="applyThemePreset('#0284c7', '#f1f5f9', 'rgba(255, 255, 255, 0.92)', true)">Clean Light</button>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" id="lblCustomColors">Kustomisasi Warna</label>
+          <div class="color-pickers-row">
+            <div class="color-box">
+              <span style="font-size: 0.72rem; color: var(--text-muted);" id="lblPrimaryCol">Utama</span>
+              <input type="color" id="primaryColorPicker" class="color-input" value="#00d2ff">
+            </div>
+            <div class="color-box">
+              <span style="font-size: 0.72rem; color: var(--text-muted);" id="lblBgCol">Latar</span>
+              <input type="color" id="bgColorPicker" class="color-input" value="#0b0f19">
+            </div>
+            <div class="color-box">
+              <span style="font-size: 0.72rem; color: var(--text-muted);" id="lblCardCol">Kartu</span>
+              <input type="color" id="cardColorPicker" class="color-input" value="#121826">
+            </div>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" id="lblLanguage">Bahasa Aplikasi</label>
+          <div style="display: flex; gap: 8px;">
+            <button class="chip-btn active" id="langIdBtn">Bahasa Indonesia</button>
+            <button class="chip-btn" id="langEnBtn">English</button>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" id="lblCustomLabels">Ubah Nama Aplikasi</label>
+          <div style="display: flex; gap: 8px;">
+            <input type="text" id="overrideAppName" class="text-input" value="Nanang Player" placeholder="Nama aplikasi...">
+            <button class="btn-action btn-primary-action" id="btnSaveLabelOverrides" style="flex: 0 0 100px;">
+              <span id="lblSaveOverrides">Simpan</span>
+            </button>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <!-- Persistent Bottom Mini Player -->
+    <div class="mini-player-bar" id="miniPlayerBar" style="display: none;">
+      <div class="mini-player-info" id="miniPlayerInfo">
+        <div class="mini-art">
+          <svg viewBox="0 0 24 24"><path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z"/></svg>
+        </div>
+        <div class="mini-meta">
+          <div class="mini-title" id="miniTitle">Tidak ada lagu</div>
+          <div class="mini-artist" id="miniArtist">Ketuk untuk membuka pemutar</div>
+        </div>
+      </div>
+      <div class="mini-controls">
+        <button class="mini-btn" id="miniBtnPlay" title="Play/Pause">
+          <svg id="miniPlayIcon" style="width: 18px; height: 18px; fill: currentColor;" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+          <svg id="miniPauseIcon" style="display:none; width: 18px; height: 18px; fill: currentColor;" viewBox="0 0 24 24"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
+        </button>
+        <button class="mini-btn" id="miniBtnNext" title="Next">
+          <svg style="width: 18px; height: 18px; fill: currentColor;" viewBox="0 0 24 24"><path d="M6 18l8.5-6L6 6v12zM16 6v12h2V6h-2z"/></svg>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Audio Element -->
+  <audio id="mainAudioElement" preload="metadata" crossorigin="anonymous"></audio>
+
+  <!-- Playlist Add Modal -->
+  <div class="modal-backdrop" id="playlistModal">
+    <div class="modal-box">
+      <h3 style="margin-bottom: 12px; font-size: 1.05rem;" id="modalPlaylistTitle">Tambah ke Playlist</h3>
+      <div id="modalTrackSelectionList" style="max-height: 240px; overflow-y: auto; display: flex; flex-direction: column; gap: 6px; margin-bottom: 16px;"></div>
+      <div style="display: flex; justify-content: flex-end; gap: 8px;">
+        <button class="btn-action btn-secondary-action" id="btnCancelModal">Batal</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Equalizer Precision Input Modal -->
+  <div class="modal-backdrop" id="eqPrecisionModal">
+    <div class="modal-box" style="max-width: 350px;">
+      <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 4px;">
+        <div>
+          <h3 style="margin-bottom: 2px; font-size: 1.05rem;" id="eqModalTitle">Atur Presisi Band</h3>
+          <p style="font-size: 0.78rem; color: var(--text-muted);" id="eqModalSubtitle">31Hz (Sub)</p>
+        </div>
+        <button type="button" class="btn-icon" style="width: 28px; height: 28px;" onclick="closeBandPrecisionModal()" title="Tutup">
+          <svg style="width: 16px; height: 16px; fill: currentColor;" viewBox="0 0 24 24"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </div>
+
+      <div style="display: flex; align-items: center; justify-content: center; gap: 6px; margin: 16px 0 14px;">
+        <button type="button" class="btn-action btn-secondary-action" style="padding: 8px 10px; font-size: 0.82rem; min-width: 44px;" onclick="modalStepGain(-1.0)">-1.0</button>
+        <button type="button" class="btn-action btn-secondary-action" style="padding: 8px 10px; font-size: 0.82rem; min-width: 44px;" onclick="modalStepGain(-0.1)">-0.1</button>
+        
+        <div style="position: relative; display: flex; align-items: center;">
+          <input type="number" id="eqModalNumberInput" min="-12" max="12" step="0.1" style="width: 95px; text-align: center; font-size: 1.25rem; font-weight: 800; padding: 6px 14px 6px 6px; border-radius: 8px; background: rgba(0,0,0,0.3); border: 2px solid var(--primary-color); color: var(--text-main);">
+          <span style="position: absolute; right: 8px; font-size: 0.76rem; font-weight: 700; color: var(--text-muted); pointer-events: none;">dB</span>
+        </div>
+
+        <button type="button" class="btn-action btn-secondary-action" style="padding: 8px 10px; font-size: 0.82rem; min-width: 44px;" onclick="modalStepGain(0.1)">+0.1</button>
+        <button type="button" class="btn-action btn-secondary-action" style="padding: 8px 10px; font-size: 0.82rem; min-width: 44px;" onclick="modalStepGain(1.0)">+1.0</button>
+      </div>
+
+      <!-- Quick targets -->
+      <div style="display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; margin-bottom: 16px;">
+        <button type="button" class="chip-btn" style="padding: 4px 10px; font-size: 0.74rem;" onclick="modalSetGain(12.0)">+12 dB</button>
+        <button type="button" class="chip-btn" style="padding: 4px 10px; font-size: 0.74rem;" onclick="modalSetGain(6.0)">+6 dB</button>
+        <button type="button" class="chip-btn" style="padding: 4px 10px; font-size: 0.74rem;" onclick="modalSetGain(3.0)">+3 dB</button>
+        <button type="button" class="chip-btn" style="padding: 4px 10px; font-size: 0.74rem;" onclick="modalSetGain(0.0)">0.0 dB</button>
+        <button type="button" class="chip-btn" style="padding: 4px 10px; font-size: 0.74rem;" onclick="modalSetGain(-3.0)">-3 dB</button>
+        <button type="button" class="chip-btn" style="padding: 4px 10px; font-size: 0.74rem;" onclick="modalSetGain(-6.0)">-6 dB</button>
+        <button type="button" class="chip-btn" style="padding: 4px 10px; font-size: 0.74rem;" onclick="modalSetGain(-12.0)">-12 dB</button>
+      </div>
+
+      <div style="display: flex; justify-content: space-between; gap: 8px;">
+        <button type="button" class="btn-action btn-secondary-action" onclick="modalSetGain(0.0)" style="flex: 0 0 auto;">Reset 0 dB</button>
+        <button type="button" class="btn-action btn-primary-action" id="btnApplyEqModal" style="flex: 1;">Terapkan & Tutup</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // =========================================================================
+    // STATE & VARIABLES
+    // =========================================================================
+    let libraryTracks = [];
+    let playlists = [
+      { id: 'favs', name: 'Favorit', trackIds: [] }
+    ];
+    let currentPlaylistTracks = [];
+    let currentTrackIndex = -1;
+    let isPlaying = false;
+    let isShuffle = false;
+    let repeatMode = 0; // 0 = Off, 1 = Repeat All, 2 = Repeat One
+    let isMuted = false;
+    let lastVolume = 0.85;
+    let isSeeking = false;
+    let isAutoScanRunning = false;
+    let visualizerRunning = false;
+
+    // Web Audio Elements
+    let audioCtx = null;
+    let audioSourceNode = null;
+    let analyserNode = null;
+    let eqBands = [];
+    const EQ_FREQUENCIES = [31, 63, 125, 250, 500, 1000, 2000, 4000, 8000, 16000];
+    const EQ_LABELS = ['31Hz', '63Hz', '125Hz', '250Hz', '500Hz', '1kHz', '2kHz', '4kHz', '8kHz', '16kHz'];
+    const EQ_BAND_NAMES = ['Sub', 'Bass', 'Low', 'Low-Mid', 'Mid', 'High-Mid', 'Presence', 'Treble', 'High', 'Air'];
+    let currentEqGains = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+    let activeModalBandIndex = 0;
+
+    // Language & Translations
+    const translations = {
+      id: {
+        appName: 'Nanang Player',
+        offlineStatus: 'Pemutar Musik Offline',
+        navPlayer: 'Pemutar',
+        navLibrary: 'Pustaka',
+        navPlaylists: 'Playlist',
+        navEqualizer: 'Equalizer',
+        navSettings: 'Tema',
+        btnScanHeader: 'Pindai MP3',
+        scanAction: 'Pindai File Audio (MP3)',
+        addFiles: 'Pilih File',
+        addDemo: 'Lagu Demo',
+        emptyLibrary: 'Belum ada lagu yang dimuat.',
+        searchPlaceholder: 'Cari lagu atau artis...',
+        scanningText: 'Memindai memori perangkat untuk file MP3...',
+        scanSuccess: 'Berhasil menemukan {count} file audio!',
+        scanEmpty: 'Tidak ada file audio ditemukan di penyimpanan.',
+        createPlaylist: 'Buat',
+        newPlaylistPlaceholder: 'Nama Playlist Baru...',
+        eqPresets: 'Preset Suara (10-Band EQ)',
+        resetEq: 'Atur Ulang EQ',
+        eqPrecisionTitle: 'Atur Presisi Band',
+        eqPrecisionApply: 'Terapkan & Tutup',
+        eqTip: 'Geser fader vertikal atau gunakan + / − untuk atur presisi. Ketuk angka dB untuk input nilai langsung. Ketuk 2x untuk reset 0.0 dB.',
+        themePresets: 'Pilihan Tema Cepat',
+        customColors: 'Kustomisasi Warna',
+        primaryCol: 'Utama',
+        bgCol: 'Latar',
+        cardCol: 'Kartu',
+        language: 'Bahasa Aplikasi',
+        customLabels: 'Ubah Nama Aplikasi',
+        saveOverrides: 'Simpan',
+        shuffleOn: 'Mode Acak: AKTIF',
+        shuffleOff: 'Mode Acak: MATI',
+        repeatOff: 'Ulang: MATI',
+        repeatAll: 'Ulang: SEMUA LAGU',
+        repeatOne: 'Ulang: SATU LAGU',
+        addToPlaylist: 'Tambah ke Playlist',
+        remove: 'Hapus',
+        deletePlaylist: 'Hapus Playlist'
+      },
+      en: {
+        appName: 'Nanang Player',
+        offlineStatus: 'Offline Audio Player',
+        navPlayer: 'Player',
+        navLibrary: 'Library',
+        navPlaylists: 'Playlists',
+        navEqualizer: 'Equalizer',
+        navSettings: 'Theme',
+        btnScanHeader: 'Scan MP3',
+        scanAction: 'Scan Audio Files (MP3)',
+        addFiles: 'Pick Files',
+        addDemo: 'Demo Tracks',
+        emptyLibrary: 'No audio files loaded yet.',
+        searchPlaceholder: 'Search tracks or artist...',
+        scanningText: 'Scanning device storage for MP3 files...',
+        scanSuccess: 'Successfully found {count} audio files!',
+        scanEmpty: 'No audio files found in device storage.',
+        createPlaylist: 'Create',
+        newPlaylistPlaceholder: 'New Playlist Name...',
+        eqPresets: 'Sound Presets (10-Band EQ)',
+        resetEq: 'Reset EQ',
+        eqPrecisionTitle: 'Precise Band Control',
+        eqPrecisionApply: 'Apply & Close',
+        eqTip: 'Drag vertical fader or use + / − for precision control. Tap dB badge to type exact value. Double-tap to reset 0.0 dB.',
+        themePresets: 'Quick Themes',
+        customColors: 'Custom Colors',
+        primaryCol: 'Primary',
+        bgCol: 'Background',
+        cardCol: 'Card',
+        language: 'App Language',
+        customLabels: 'Change App Name',
+        saveOverrides: 'Save',
+        shuffleOn: 'Shuffle: ON',
+        shuffleOff: 'Shuffle: OFF',
+        repeatOff: 'Repeat: OFF',
+        repeatAll: 'Repeat: ALL',
+        repeatOne: 'Repeat: ONE',
+        addToPlaylist: 'Add to Playlist',
+        remove: 'Remove',
+        deletePlaylist: 'Delete Playlist'
+      }
+    };
+
+    let currentLang = 'id';
+    let userAppName = 'Nanang Player';
+
+    // DOM Elements
+    const audioEl = document.getElementById('mainAudioElement');
+    const btnPlay = document.getElementById('btnPlay');
+    const playIcon = document.getElementById('playIcon');
+    const pauseIcon = document.getElementById('pauseIcon');
+    const btnPrev = document.getElementById('btnPrev');
+    const btnNext = document.getElementById('btnNext');
+    const btnShuffle = document.getElementById('btnShuffle');
+    const btnRepeat = document.getElementById('btnRepeat');
+    const repeatBadge = document.getElementById('repeatBadge');
+    const seekBar = document.getElementById('seekBar');
+    const timeElapsed = document.getElementById('timeElapsed');
+    const timeTotal = document.getElementById('timeTotal');
+    const volSlider = document.getElementById('volSlider');
+    const btnMute = document.getElementById('btnMute');
+    const volLabel = document.getElementById('volLabel');
+    const nowPlayingTitle = document.getElementById('nowPlayingTitle');
+    const nowPlayingArtist = document.getElementById('nowPlayingArtist');
+    const vinylDisc = document.getElementById('vinylDisc');
+    const fileInput = document.getElementById('fileInput');
+    const libraryTrackList = document.getElementById('libraryTrackList');
+    const librarySearch = document.getElementById('librarySearch');
+    const playlistContainer = document.getElementById('playlistContainer');
+    const newPlaylistName = document.getElementById('newPlaylistName');
+    const btnCreatePlaylist = document.getElementById('btnCreatePlaylist');
+    const visualizerCanvas = document.getElementById('visualizerCanvas');
+    const canvasCtx = visualizerCanvas.getContext('2d');
+    const scanStatusBanner = document.getElementById('scanStatusBanner');
+    const scanStatusText = document.getElementById('scanStatusText');
+    const btnHeaderScan = document.getElementById('btnHeaderScan');
+    const btnTriggerScan = document.getElementById('btnTriggerScan');
+    const miniPlayerBar = document.getElementById('miniPlayerBar');
+    const miniTitle = document.getElementById('miniTitle');
+    const miniArtist = document.getElementById('miniArtist');
+    const miniBtnPlay = document.getElementById('miniBtnPlay');
+    const miniPlayIcon = document.getElementById('miniPlayIcon');
+    const miniPauseIcon = document.getElementById('miniPauseIcon');
+    const miniBtnNext = document.getElementById('miniBtnNext');
+
+    // =========================================================================
+    // PERSISTENCE & TOAST NOTIFICATION HELPERS
+    // =========================================================================
+    function showToast(message, duration = 3000) {
+      let toast = document.getElementById('toastNotice');
+      if (!toast) {
+        toast = document.createElement('div');
+        toast.id = 'toastNotice';
+        toast.className = 'toast-notice';
+        document.body.appendChild(toast);
+      }
+      toast.innerHTML = `<svg style="width:18px;height:18px;min-width:18px;fill:var(--primary-color);" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg><span>${escapeHtml(message)}</span>`;
+      toast.classList.add('visible');
+      clearTimeout(toast._timeout);
+      toast._timeout = setTimeout(() => {
+        toast.classList.remove('visible');
+      }, duration);
+    }
+
+    function saveLibraryTracks() {
+      try {
+        const persistent = libraryTracks.filter(t => !t.url.startsWith('blob:'));
+        localStorage.setItem('nanang_library', JSON.stringify(persistent));
+      } catch (e) {}
+    }
+
+    function savePlaylists() {
+      try {
+        localStorage.setItem('nanang_playlists', JSON.stringify(playlists));
+      } catch (e) {}
+    }
+
+    function saveThemeState(primary, bg, card, isLight) {
+      try {
+        localStorage.setItem('nanang_theme', JSON.stringify({ primary, bg, card, isLight }));
+      } catch (e) {}
+    }
+
+    function loadSavedState() {
+      try {
+        const savedLib = localStorage.getItem('nanang_library');
+        if (savedLib) {
+          const parsed = JSON.parse(savedLib);
+          if (Array.isArray(parsed) && parsed.length > 0) {
+            libraryTracks = parsed;
+          }
+        }
+
+        const savedPl = localStorage.getItem('nanang_playlists');
+        if (savedPl) {
+          const parsed = JSON.parse(savedPl);
+          if (Array.isArray(parsed) && parsed.length > 0) {
+            playlists = parsed;
+          }
+        }
+
+        const savedTheme = localStorage.getItem('nanang_theme');
+        if (savedTheme) {
+          const theme = JSON.parse(savedTheme);
+          if (theme) {
+            if (theme.isLight) document.body.classList.add('light-theme');
+            if (theme.primary) {
+              primaryColorPicker.value = theme.primary;
+              updateColors(theme.primary, theme.bg, theme.card);
+            }
+          }
+        }
+
+        const savedLang = localStorage.getItem('nanang_lang');
+        if (savedLang && (savedLang === 'id' || savedLang === 'en')) {
+          currentLang = savedLang;
+          langIdBtn.classList.toggle('active', currentLang === 'id');
+          langEnBtn.classList.toggle('active', currentLang === 'en');
+        }
+
+        const savedName = localStorage.getItem('nanang_app_name');
+        if (savedName) {
+          userAppName = savedName;
+          document.getElementById('overrideAppName').value = savedName;
+        }
+
+        loadEqState();
+      } catch (e) {}
+    }
+
+    // =========================================================================
+    // 1. WEB AUDIO & EQUALIZER SETUP
+    // =========================================================================
+    function initWebAudio() {
+      if (audioCtx) {
+        if (audioCtx.state === 'suspended') {
+          audioCtx.resume();
+        }
+        return;
+      }
+      try {
+        const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+        audioCtx = new AudioContextClass();
+        audioSourceNode = audioCtx.createMediaElementSource(audioEl);
+        analyserNode = audioCtx.createAnalyser();
+        analyserNode.fftSize = 64;
+
+        // Build 10-band Equalizer
+        eqBands = EQ_FREQUENCIES.map((freq, idx) => {
+          const filter = audioCtx.createBiquadFilter();
+          if (idx === 0) {
+            filter.type = 'lowshelf';
+          } else if (idx === EQ_FREQUENCIES.length - 1) {
+            filter.type = 'highshelf';
+          } else {
+            filter.type = 'peaking';
+            filter.Q.value = 1.4;
+          }
+          filter.frequency.value = freq;
+          filter.gain.value = currentEqGains[idx] || 0;
+          return filter;
+        });
+
+        let prevNode = audioSourceNode;
+        eqBands.forEach(filter => {
+          prevNode.connect(filter);
+          prevNode = filter;
+        });
+        prevNode.connect(analyserNode);
+        analyserNode.connect(audioCtx.destination);
+
+        startVisualizer();
+      } catch (err) {
+        console.warn('Web Audio initialization note:', err);
+      }
+    }
+
+    function startVisualizer() {
+      if (!visualizerRunning) {
+        visualizerRunning = true;
+        requestAnimationFrame(drawVisualizer);
+      }
+    }
+
+    function drawVisualizer() {
+      if (!visualizerRunning) return;
+      requestAnimationFrame(drawVisualizer);
+      if (!analyserNode || !isPlaying) return;
+
+      const width = visualizerCanvas.clientWidth;
+      const height = visualizerCanvas.clientHeight;
+      if (width === 0 || height === 0) return;
+
+      if (visualizerCanvas.width !== width || visualizerCanvas.height !== height) {
+        visualizerCanvas.width = width;
+        visualizerCanvas.height = height;
+      }
+
+      const bufferLength = analyserNode.frequencyBinCount;
+      const dataArray = new Uint8Array(bufferLength);
+      analyserNode.getByteFrequencyData(dataArray);
+
+      canvasCtx.clearRect(0, 0, width, height);
+
+      const barWidth = (width / bufferLength) * 2;
+      let x = 0;
+
+      const primaryCol = getComputedStyle(document.documentElement).getPropertyValue('--primary-color').trim() || '#00d2ff';
+      canvasCtx.fillStyle = primaryCol;
+      canvasCtx.globalAlpha = 0.85;
+
+      for (let i = 0; i < bufferLength; i++) {
+        const barHeight = (dataArray[i] / 255) * height;
+        canvasCtx.fillRect(x, height - barHeight, Math.max(barWidth - 1.5, 1), barHeight);
+        x += barWidth;
+      }
+    }
+
+    // =========================================================================
+    // 10-BAND EQ PRECISION CONTROL & REAL-TIME AUDIO SYNCHRONIZATION
+    // =========================================================================
+    function setBandGain(index, val, skipSave = false) {
+      if (index < 0 || index >= 10) return;
+      val = Math.max(-12, Math.min(12, Math.round(val * 10) / 10));
+      currentEqGains[index] = val;
+
+      // Update Web Audio node in real time
+      if (eqBands[index] && audioCtx) {
+        try {
+          eqBands[index].gain.setTargetAtTime(val, audioCtx.currentTime, 0.008);
+        } catch (e) {
+          eqBands[index].gain.value = val;
+        }
+      }
+
+      // Update badge display
+      const valLabel = document.getElementById(`eqVal${index}`);
+      if (valLabel) {
+        const formatted = (val > 0 ? '+' : '') + val.toFixed(1) + ' dB';
+        valLabel.textContent = formatted;
+        valLabel.classList.toggle('boost', val > 0);
+        valLabel.classList.toggle('cut', val < 0);
+      }
+
+      // Update thumb position & bubble
+      const pct = ((12 - val) / 24) * 100;
+      const thumb = document.getElementById(`eqThumb${index}`);
+      if (thumb) {
+        thumb.style.top = pct + '%';
+      }
+      const bubble = document.getElementById(`eqBubble${index}`);
+      if (bubble) {
+        bubble.textContent = (val > 0 ? '+' : '') + val.toFixed(1) + ' dB';
+      }
+
+      // Update dynamic track fill
+      const fill = document.getElementById(`eqFill${index}`);
+      if (fill) {
+        if (val > 0) {
+          fill.style.top = pct + '%';
+          fill.style.height = ((val / 24) * 100) + '%';
+          fill.style.background = 'var(--primary-color)';
+          fill.style.boxShadow = '0 0 6px var(--primary-color)';
+        } else if (val < 0) {
+          fill.style.top = '50%';
+          fill.style.height = ((Math.abs(val) / 24) * 100) + '%';
+          fill.style.background = '#ff6b6b';
+          fill.style.boxShadow = '0 0 6px rgba(255, 107, 107, 0.4)';
+        } else {
+          fill.style.height = '0%';
+          fill.style.boxShadow = 'none';
+        }
+      }
+
+      // Sync underlying native input slider
+      const slider = document.getElementById(`eqBand${index}`);
+      if (slider && parseFloat(slider.value) !== val) {
+        slider.value = val;
+        slider.setAttribute('aria-valuenow', val.toString());
+      }
+
+      // If precision modal is open for this band, sync its input
+      if (activeModalBandIndex === index) {
+        const modalInput = document.getElementById('eqModalNumberInput');
+        if (modalInput && parseFloat(modalInput.value) !== val) {
+          modalInput.value = val.toFixed(1);
+        }
+      }
+
+      if (!skipSave) {
+        saveEqState();
+      }
+    }
+
+    window.updateBandUiAndAudio = function(index, val) {
+      setBandGain(index, val, false);
+    };
+
+    window.stepBand = function(index, delta) {
+      initWebAudio();
+      const current = currentEqGains[index] || 0;
+      const newVal = Math.round((current + delta) * 10) / 10;
+      setBandGain(index, newVal, false);
+    };
+
+    window.promptExactBandValue = function(index) {
+      openBandPrecisionModal(index);
+    };
+
+    function initEqualizerFaders() {
+      for (let i = 0; i < 10; i++) {
+        const container = document.getElementById(`eqSliderBox${i}`);
+        const chan = document.getElementById(`eqChan${i}`);
+        const badge = document.getElementById(`eqVal${i}`);
+        if (!container) continue;
+
+        let isDragging = false;
+
+        const updateFromPointer = (e) => {
+          const groove = container.querySelector('.eq-track-groove');
+          if (!groove) return;
+          const rect = groove.getBoundingClientRect();
+          let ratio = (e.clientY - rect.top) / rect.height;
+          ratio = Math.max(0, Math.min(1, ratio));
+          let gain = 12 - (ratio * 24);
+          if (Math.abs(gain) < 0.25) gain = 0; // magnetic snap to center 0 dB
+          gain = Math.round(gain * 10) / 10;
+          gain = Math.max(-12, Math.min(12, gain));
+          initWebAudio();
+          setBandGain(i, gain, true);
+        };
+
+        container.addEventListener('pointerdown', (e) => {
+          e.preventDefault();
+          initWebAudio();
+          isDragging = true;
+          container.classList.add('dragging');
+          if (chan) chan.classList.add('active-touch');
+          try {
+            container.setPointerCapture(e.pointerId);
+          } catch (err) {}
+          updateFromPointer(e);
+        });
+
+        container.addEventListener('pointermove', (e) => {
+          if (!isDragging) return;
+          updateFromPointer(e);
+        });
+
+        const stopDrag = (e) => {
+          if (!isDragging) return;
+          isDragging = false;
+          container.classList.remove('dragging');
+          if (chan) chan.classList.remove('active-touch');
+          try {
+            if (container.hasPointerCapture(e.pointerId)) {
+              container.releasePointerCapture(e.pointerId);
+            }
+          } catch (err) {}
+          saveEqState();
+        };
+
+        container.addEventListener('pointerup', stopDrag);
+        container.addEventListener('pointercancel', stopDrag);
+
+        // Double click / tap on fader resets this band to 0.0 dB
+        container.addEventListener('dblclick', (e) => {
+          e.preventDefault();
+          initWebAudio();
+          setBandGain(i, 0);
+          showToast(`${EQ_LABELS[i]} diatur ulang ke 0.0 dB`);
+        });
+
+        if (badge) {
+          badge.addEventListener('dblclick', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            initWebAudio();
+            setBandGain(i, 0);
+            showToast(`${EQ_LABELS[i]} diatur ulang ke 0.0 dB`);
+          });
+        }
+
+        // Stepper buttons with single-tap and hold-to-repeat
+        if (chan) {
+          const plusBtn = chan.querySelector('.eq-btn-step[data-action="plus"]');
+          const minusBtn = chan.querySelector('.eq-btn-step[data-action="minus"]');
+          setupHoldStep(plusBtn, i, 0.5);
+          setupHoldStep(minusBtn, i, -0.5);
+        }
+
+        // Native range input keyboard fallback
+        const slider = document.getElementById(`eqBand${i}`);
+        if (slider) {
+          slider.addEventListener('input', (e) => {
+            initWebAudio();
+            setBandGain(i, parseFloat(e.target.value));
+          });
+          slider.addEventListener('change', (e) => {
+            initWebAudio();
+            setBandGain(i, parseFloat(e.target.value));
+          });
+        }
+      }
+    }
+
+    function setupHoldStep(btn, bandIndex, delta) {
+      if (!btn) return;
+      let holdTimer = null;
+      let holdInterval = null;
+
+      const doStep = () => {
+        initWebAudio();
+        stepBand(bandIndex, delta);
+      };
+
+      btn.addEventListener('pointerdown', (e) => {
+        e.preventDefault();
+        doStep();
+        holdTimer = setTimeout(() => {
+          holdInterval = setInterval(doStep, 80);
+        }, 320);
+      });
+
+      const clearHold = () => {
+        clearTimeout(holdTimer);
+        clearInterval(holdInterval);
+        holdTimer = null;
+        holdInterval = null;
+      };
+
+      btn.addEventListener('pointerup', clearHold);
+      btn.addEventListener('pointerleave', clearHold);
+      btn.addEventListener('pointercancel', clearHold);
+    }
+
+    // =========================================================================
+    // EQUALIZER PRECISION MODAL
+    // =========================================================================
+    window.openBandPrecisionModal = function(index) {
+      initWebAudio();
+      activeModalBandIndex = index;
+      const modal = document.getElementById('eqPrecisionModal');
+      const title = document.getElementById('eqModalTitle');
+      const subtitle = document.getElementById('eqModalSubtitle');
+      const input = document.getElementById('eqModalNumberInput');
+
+      if (title) title.textContent = `${getTranslation('eqPrecisionTitle') || 'Atur Presisi Band'} ${index + 1}`;
+      if (subtitle) subtitle.textContent = `${EQ_LABELS[index]} (${EQ_BAND_NAMES[index] || ''})`;
+      if (input) {
+        input.value = (currentEqGains[index] || 0).toFixed(1);
+      }
+      if (modal) {
+        modal.classList.add('open');
+        modal.classList.add('visible');
+      }
+    };
+
+    window.closeBandPrecisionModal = function() {
+      const modal = document.getElementById('eqPrecisionModal');
+      if (modal) {
+        modal.classList.remove('open');
+        modal.classList.remove('visible');
+      }
+    };
+
+    window.modalStepGain = function(delta) {
+      initWebAudio();
+      const cur = currentEqGains[activeModalBandIndex] || 0;
+      let next = Math.round((cur + delta) * 10) / 10;
+      next = Math.max(-12, Math.min(12, next));
+      setBandGain(activeModalBandIndex, next);
+      const input = document.getElementById('eqModalNumberInput');
+      if (input) input.value = next.toFixed(1);
+    };
+
+    window.modalSetGain = function(val) {
+      initWebAudio();
+      const clamped = Math.max(-12, Math.min(12, Math.round(val * 10) / 10));
+      setBandGain(activeModalBandIndex, clamped);
+      const input = document.getElementById('eqModalNumberInput');
+      if (input) input.value = clamped.toFixed(1);
+    };
+
+    const eqModalInput = document.getElementById('eqModalNumberInput');
+    if (eqModalInput) {
+      eqModalInput.addEventListener('input', (e) => {
+        initWebAudio();
+        const parsed = parseFloat(e.target.value);
+        if (!isNaN(parsed)) {
+          const clamped = Math.max(-12, Math.min(12, Math.round(parsed * 10) / 10));
+          setBandGain(activeModalBandIndex, clamped);
+        }
+      });
+    }
+
+    const btnApplyEqModal = document.getElementById('btnApplyEqModal');
+    if (btnApplyEqModal) {
+      btnApplyEqModal.addEventListener('click', () => {
+        closeBandPrecisionModal();
+        const g = currentEqGains[activeModalBandIndex] || 0;
+        showToast(`${EQ_LABELS[activeModalBandIndex]} diatur ke ${(g > 0 ? '+' : '')}${g.toFixed(1)} dB`);
+      });
+    }
+
+    const eqPrecisionModal = document.getElementById('eqPrecisionModal');
+    if (eqPrecisionModal) {
+      eqPrecisionModal.addEventListener('click', (e) => {
+        if (e.target === eqPrecisionModal) {
+          closeBandPrecisionModal();
+        }
+      });
+    }
+
+    const EQ_PRESET_VALUES = {
+      flat: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+      bass: [6, 5.5, 4.5, 3, 1, 0, 0, 0, 0, -1],
+      pop: [-1.5, 1, 2.5, 4, 3, 1, -1, 1.5, 3, 2],
+      rock: [5, 4, 2.5, 0.5, -1, 1, 2.5, 4, 5, 5.5],
+      jazz: [3.5, 2.5, 1.5, 1, 1.5, 2, 2.5, 3.5, 4, 4.5],
+      vocal: [-2, -1.5, 0, 2, 4.5, 5, 3.5, 2, 0.5, -1],
+      edm: [5.5, 5, 2, 0, -1.5, 2, 1, 3.5, 5, 5.5],
+      acoustic: [3.5, 3, 1.5, 1, 2, 2.5, 3, 3.5, 3.5, 3]
+    };
+
+    function applyEqPreset(presetName) {
+      initWebAudio();
+      const vals = EQ_PRESET_VALUES[presetName] || EQ_PRESET_VALUES.flat;
+      vals.forEach((v, i) => {
+        setBandGain(i, v, true);
+      });
+      document.querySelectorAll('#eqPresetsRow .chip-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.preset === presetName);
+      });
+      saveEqState();
+    }
+
+    document.querySelectorAll('#eqPresetsRow .chip-btn').forEach(btn => {
+      btn.addEventListener('click', () => applyEqPreset(btn.dataset.preset));
+    });
+
+    document.getElementById('btnResetEq').addEventListener('click', () => {
+      applyEqPreset('flat');
+      showToast('Equalizer diatur ulang ke Flat (0.0 dB)');
+    });
+
+    function saveEqState() {
+      try {
+        localStorage.setItem('nanang_eq_gains', JSON.stringify(currentEqGains));
+      } catch (e) {}
+    }
+
+    function loadEqState() {
+      try {
+        const saved = localStorage.getItem('nanang_eq_gains');
+        if (saved) {
+          const gains = JSON.parse(saved);
+          if (Array.isArray(gains) && gains.length === 10) {
+            gains.forEach((v, i) => {
+              setBandGain(i, parseFloat(v) || 0, true);
+            });
+            return;
+          }
+        }
+      } catch (e) {}
+      for (let i = 0; i < 10; i++) {
+        setBandGain(i, 0, true);
+      }
+    }
+
+    // =========================================================================
+    // 2. AUDIO SCANNER & IMPORT (MP3) - AUTO & MANUAL
+    // =========================================================================
+    function triggerAudioScan(isAuto = false) {
+      isAutoScanRunning = isAuto;
+      scanStatusBanner.classList.add('visible');
+      scanStatusText.textContent = isAuto ? 'Memindai memori perangkat untuk lagu lokal...' : getTranslation('scanningText');
+
+      if (window.AndroidBridge && typeof window.AndroidBridge.scanAudioFiles === 'function') {
+        window.AndroidBridge.scanAudioFiles();
+      } else {
+        // Fallback for non-Android / browser preview testing
+        setTimeout(() => {
+          scanStatusBanner.classList.remove('visible');
+          if (!isAuto) {
+            showToast('Pindai Media otomatis aktif di Android. Gunakan "Pilih File" atau "Lagu Demo".');
+          }
+        }, 800);
+      }
+    }
+
+    btnHeaderScan.addEventListener('click', () => {
+      switchView('viewLibrary');
+      triggerAudioScan(false);
+    });
+    btnTriggerScan.addEventListener('click', () => triggerAudioScan(false));
+
+    // Callbacks from Android Kotlin
+    window.onAudioScanStarted = function() {
+      scanStatusBanner.classList.add('visible');
+      scanStatusText.textContent = getTranslation('scanningText');
+    };
+
+    window.onAudioPermissionDenied = function() {
+      scanStatusBanner.classList.remove('visible');
+      if (!isAutoScanRunning) {
+        showToast('Izin akses audio ditolak. Berikan izin di Pengaturan untuk memindai lagu.');
+      }
+    };
+
+    window.onAudioFilesScanned = function(scannedArray) {
+      scanStatusBanner.classList.remove('visible');
+      if (!Array.isArray(scannedArray) || scannedArray.length === 0) {
+        if (!isAutoScanRunning) {
+          showToast(getTranslation('scanEmpty'));
+        }
+        return;
+      }
+
+      let newCount = 0;
+      scannedArray.forEach(track => {
+        const existingIdx = libraryTracks.findIndex(t => t.id === track.id || t.url === track.url);
+        if (existingIdx === -1) {
+          libraryTracks.push(track);
+          newCount++;
+        } else {
+          libraryTracks[existingIdx] = track;
+        }
+      });
+
+      saveLibraryTracks();
+      renderLibrary();
+
+      const countNum = newCount > 0 ? newCount : scannedArray.length;
+      const msg = getTranslation('scanSuccess').replace('{count}', countNum);
+      showToast(msg);
+
+      if (currentTrackIndex === -1 && libraryTracks.length > 0) {
+        currentPlaylistTracks = [...libraryTracks];
+        loadTrack(0);
+      }
+    };
+
+    // Manual File Picker
+    fileInput.addEventListener('change', (e) => {
+      const files = Array.from(e.target.files);
+      if (!files.length) return;
+
+      files.forEach(file => {
+        const url = URL.createObjectURL(file);
+        const nameWithoutExt = file.name.replace(/\.[^/.]+$/, "");
+        const track = {
+          id: 'file_' + Date.now() + '_' + Math.random().toString(36).substr(2, 5),
+          title: nameWithoutExt,
+          artist: 'Berkas Lokal',
+          album: 'Penyimpanan',
+          size: (file.size / (1024 * 1024)).toFixed(1) + ' MB',
+          url: url
+        };
+        libraryTracks.push(track);
+      });
+
+      renderLibrary();
+      showToast(`${files.length} file berhasil ditambahkan`);
+
+      if (currentTrackIndex === -1 && libraryTracks.length > 0) {
+        currentPlaylistTracks = [...libraryTracks];
+        loadTrack(0);
+      }
+    });
+
+    // Offline Melodic Synthesizer Demo
+    function generateSynthesizedTrack(title, baseFreq, pattern) {
+      const sampleRate = 22050;
+      const durationSec = 15;
+      const numSamples = sampleRate * durationSec;
+      const wavBuffer = new ArrayBuffer(44 + numSamples * 2);
+      const view = new DataView(wavBuffer);
+
+      function writeString(offset, string) {
+        for (let i = 0; i < string.length; i++) view.setUint8(offset + i, string.charCodeAt(i));
+      }
+      writeString(0, 'RIFF');
+      view.setUint32(4, 36 + numSamples * 2, true);
+      writeString(8, 'WAVE');
+      writeString(12, 'fmt ');
+      view.setUint32(16, 16, true);
+      view.setUint16(20, 1, true);
+      view.setUint16(22, 1, true);
+      view.setUint32(24, sampleRate, true);
+      view.setUint32(28, sampleRate * 2, true);
+      view.setUint16(32, 2, true);
+      view.setUint16(34, 16, true);
+      writeString(36, 'data');
+      view.setUint32(40, numSamples * 2, true);
+
+      const notes = pattern.map(p => baseFreq * Math.pow(2, p / 12));
+      for (let i = 0; i < numSamples; i++) {
+        const t = i / sampleRate;
+        const noteIdx = Math.floor(t * 2.5) % notes.length;
+        const freq = notes[noteIdx];
+        const envelope = Math.sin((t % 0.4) * Math.PI * 2.5) > 0 ? (1 - (t % 0.4) * 2.5) : 0.15;
+        const sample = Math.sin(2 * Math.PI * freq * t) * envelope * 0.45;
+        view.setInt16(44 + i * 2, sample * 32767, true);
+      }
+
+      const blob = new Blob([wavBuffer], { type: 'audio/wav' });
+      return {
+        id: 'synth_' + Date.now() + '_' + Math.random().toString(36).substr(2, 5),
+        title: title,
+        artist: 'Nanang Melody Demo',
+        album: 'Demo Album',
+        size: '0.6 MB (Synth)',
+        url: URL.createObjectURL(blob)
+      };
+    }
+
+    document.getElementById('btnLoadDemoTracks').addEventListener('click', () => {
+      const d1 = generateSynthesizedTrack('Chill Neon Nights', 220, [0, 4, 7, 11, 7, 4]);
+      const d2 = generateSynthesizedTrack('Cyber Ambient Breeze', 293.66, [0, 2, 5, 9, 12, 9]);
+      const d3 = generateSynthesizedTrack('Synthwave Moonlight', 261.63, [0, 3, 7, 10, 12, 10]);
+      libraryTracks.push(d1, d2, d3);
+      renderLibrary();
+      showToast('3 Lagu Demo berhasil dimuat');
+      if (currentTrackIndex === -1) {
+        currentPlaylistTracks = [...libraryTracks];
+        loadTrack(0);
+      }
+    });
+
+    // =========================================================================
+    // 3. PLAYBACK ENGINE & AUDIO CONTROLS
+    // =========================================================================
+    function loadTrack(index) {
+      if (!currentPlaylistTracks.length || index < 0 || index >= currentPlaylistTracks.length) return;
+      currentTrackIndex = index;
+      const track = currentPlaylistTracks[index];
+
+      nowPlayingTitle.textContent = track.title;
+      nowPlayingArtist.textContent = track.artist + (track.size ? ` • ${track.size}` : '');
+
+      miniTitle.textContent = track.title;
+      miniArtist.textContent = track.artist;
+      miniPlayerBar.style.display = 'flex';
+
+      audioEl.src = track.url;
+      audioEl.load();
+
+      updateMediaSession(track);
+      renderLibrary();
+      updatePlayPauseUI(false);
+    }
+
+    function updateMediaSession(track) {
+      if ('mediaSession' in navigator && track) {
+        try {
+          navigator.mediaSession.metadata = new MediaMetadata({
+            title: track.title,
+            artist: track.artist || 'Nanang Player',
+            album: track.album || 'Musik Lokal'
+          });
+          navigator.mediaSession.setActionHandler('play', () => togglePlay());
+          navigator.mediaSession.setActionHandler('pause', () => togglePlay());
+          navigator.mediaSession.setActionHandler('previoustrack', () => playPrevTrack());
+          navigator.mediaSession.setActionHandler('nexttrack', () => playNextTrack());
+          navigator.mediaSession.setActionHandler('seekto', (details) => {
+            if (details.seekTime && isFinite(details.seekTime) && audioEl.duration) {
+              audioEl.currentTime = details.seekTime;
+            }
+          });
+        } catch (e) {}
+      }
+    }
+
+    function togglePlay() {
+      initWebAudio();
+
+      if (!currentPlaylistTracks.length) {
+        if (libraryTracks.length) {
+          currentPlaylistTracks = [...libraryTracks];
+          loadTrack(0);
+        } else {
+          switchView('viewLibrary');
+          showToast('Pilih lagu atau lakukan pemindaian audio');
+          return;
+        }
+      }
+
+      if (audioEl.paused) {
+        audioEl.play().then(() => {
+          updatePlayPauseUI(true);
+        }).catch(err => {
+          console.warn('Playback error note:', err);
+          updatePlayPauseUI(true);
+        });
+      } else {
+        audioEl.pause();
+        updatePlayPauseUI(false);
+      }
+    }
+
+    function updatePlayPauseUI(playing) {
+      isPlaying = playing;
+      playIcon.style.display = playing ? 'none' : 'block';
+      pauseIcon.style.display = playing ? 'block' : 'none';
+      miniPlayIcon.style.display = playing ? 'none' : 'block';
+      miniPauseIcon.style.display = playing ? 'block' : 'none';
+      vinylDisc.classList.toggle('playing', playing);
+      if (playing) {
+        startVisualizer();
+      }
+    }
+
+    audioEl.addEventListener('play', () => updatePlayPauseUI(true));
+    audioEl.addEventListener('pause', () => updatePlayPauseUI(false));
+
+    function playNextTrack() {
+      if (!currentPlaylistTracks.length) return;
+      if (isShuffle) {
+        let rand = Math.floor(Math.random() * currentPlaylistTracks.length);
+        if (currentPlaylistTracks.length > 1 && rand === currentTrackIndex) {
+          rand = (rand + 1) % currentPlaylistTracks.length;
+        }
+        loadTrack(rand);
+      } else {
+        if (currentTrackIndex + 1 < currentPlaylistTracks.length) {
+          loadTrack(currentTrackIndex + 1);
+        } else if (repeatMode === 1) { // Repeat all
+          loadTrack(0);
+        } else {
+          updatePlayPauseUI(false);
+          return;
+        }
+      }
+      audioEl.play().catch(() => {});
+    }
+
+    function playPrevTrack() {
+      if (!currentPlaylistTracks.length) return;
+      if (audioEl.currentTime > 3) {
+        audioEl.currentTime = 0;
+        return;
+      }
+      if (isShuffle) {
+        let rand = Math.floor(Math.random() * currentPlaylistTracks.length);
+        loadTrack(rand);
+      } else {
+        let prev = currentTrackIndex - 1;
+        if (prev < 0) prev = currentPlaylistTracks.length - 1;
+        loadTrack(prev);
+      }
+      audioEl.play().catch(() => {});
+    }
+
+    btnPlay.addEventListener('click', togglePlay);
+    miniBtnPlay.addEventListener('click', (e) => {
+      e.stopPropagation();
+      togglePlay();
+    });
+    btnNext.addEventListener('click', playNextTrack);
+    miniBtnNext.addEventListener('click', (e) => {
+      e.stopPropagation();
+      playNextTrack();
+    });
+    btnPrev.addEventListener('click', playPrevTrack);
+
+    // Shuffle
+    btnShuffle.addEventListener('click', () => {
+      isShuffle = !isShuffle;
+      btnShuffle.classList.toggle('active', isShuffle);
+      btnShuffle.title = isShuffle ? getTranslation('shuffleOn') : getTranslation('shuffleOff');
+      showToast(isShuffle ? getTranslation('shuffleOn') : getTranslation('shuffleOff'));
+    });
+
+    // Repeat Mode (0: Off, 1: Repeat All, 2: Repeat One)
+    btnRepeat.addEventListener('click', () => {
+      repeatMode = (repeatMode + 1) % 3;
+      if (repeatMode === 0) {
+        btnRepeat.classList.remove('active');
+        repeatBadge.style.display = 'none';
+        btnRepeat.title = getTranslation('repeatOff');
+        showToast(getTranslation('repeatOff'));
+      } else if (repeatMode === 1) {
+        btnRepeat.classList.add('active');
+        repeatBadge.style.display = 'none';
+        btnRepeat.title = getTranslation('repeatAll');
+        showToast(getTranslation('repeatAll'));
+      } else {
+        btnRepeat.classList.add('active');
+        repeatBadge.style.display = 'block';
+        btnRepeat.title = getTranslation('repeatOne');
+        showToast(getTranslation('repeatOne'));
+      }
+    });
+
+    audioEl.addEventListener('ended', () => {
+      if (repeatMode === 2) {
+        audioEl.currentTime = 0;
+        audioEl.play().catch(() => {});
+      } else {
+        playNextTrack();
+      }
+    });
+
+    // Seekbar handling - smooth preview and seek without fighting user touches
+    function commitSeek(val) {
+      isSeeking = false;
+      if (isFinite(audioEl.duration) && audioEl.duration > 0) {
+        audioEl.currentTime = (parseFloat(val) / 100) * audioEl.duration;
+      }
+    }
+
+    seekBar.addEventListener('pointerdown', () => { isSeeking = true; });
+    seekBar.addEventListener('touchstart', () => { isSeeking = true; }, { passive: true });
+    seekBar.addEventListener('input', (e) => {
+      isSeeking = true;
+      if (isFinite(audioEl.duration) && audioEl.duration > 0) {
+        const preview = (parseFloat(e.target.value) / 100) * audioEl.duration;
+        timeElapsed.textContent = formatTime(preview);
+      }
+    });
+    seekBar.addEventListener('pointerup', (e) => commitSeek(e.target.value));
+    seekBar.addEventListener('touchend', (e) => commitSeek(e.target.value));
+    seekBar.addEventListener('change', (e) => commitSeek(e.target.value));
+
+    audioEl.addEventListener('timeupdate', () => {
+      if (!isSeeking && isFinite(audioEl.duration) && audioEl.duration > 0) {
+        const percent = (audioEl.currentTime / audioEl.duration) * 100;
+        seekBar.value = percent;
+        timeElapsed.textContent = formatTime(audioEl.currentTime);
+        timeTotal.textContent = formatTime(audioEl.duration);
+      }
+    });
+
+    audioEl.addEventListener('loadedmetadata', () => {
+      if (isFinite(audioEl.duration) && audioEl.duration > 0) {
+        timeTotal.textContent = formatTime(audioEl.duration);
+      }
+    });
+
+    function formatTime(seconds) {
+      if (!isFinite(seconds) || isNaN(seconds)) return '0:00';
+      const m = Math.floor(seconds / 60);
+      const s = Math.floor(seconds % 60);
+      return `${m}:${s < 10 ? '0' : ''}${s}`;
+    }
+
+    // Volume & Mute
+    volSlider.addEventListener('input', (e) => {
+      const val = parseFloat(e.target.value);
+      audioEl.volume = val;
+      isMuted = (val === 0);
+      lastVolume = val > 0 ? val : 0.85;
+      volLabel.textContent = Math.round(val * 100) + '%';
+    });
+
+    btnMute.addEventListener('click', () => {
+      isMuted = !isMuted;
+      if (isMuted) {
+        lastVolume = audioEl.volume > 0 ? audioEl.volume : 0.85;
+        audioEl.volume = 0;
+        volSlider.value = 0;
+        volLabel.textContent = '0%';
+      } else {
+        audioEl.volume = lastVolume;
+        volSlider.value = lastVolume;
+        volLabel.textContent = Math.round(lastVolume * 100) + '%';
+      }
+    });
+
+    // =========================================================================
+    // 4. LIBRARY & PLAYLIST MANAGEMENT
+    // =========================================================================
+    function renderLibrary() {
+      const query = librarySearch.value.toLowerCase().trim();
+      const filtered = libraryTracks.filter(t =>
+        t.title.toLowerCase().includes(query) || (t.artist && t.artist.toLowerCase().includes(query))
+      );
+
+      if (filtered.length === 0) {
+        libraryTrackList.innerHTML = `
+          <div class="empty-state">
+            <p>${libraryTracks.length ? 'Tidak ada lagu yang cocok dengan pencarian' : getTranslation('emptyLibrary')}</p>
+          </div>
+        `;
+        return;
+      }
+
+      libraryTrackList.innerHTML = '';
+      filtered.forEach((track, idx) => {
+        const isCurrent = currentPlaylistTracks[currentTrackIndex]?.id === track.id;
+        const item = document.createElement('div');
+        item.className = `track-item ${isCurrent ? 'playing' : ''}`;
+        item.innerHTML = `
+          <div class="track-info-left">
+            <div class="track-num">${isCurrent && isPlaying ? '▶' : (idx + 1)}</div>
+            <div class="track-meta">
+              <div class="track-name">${escapeHtml(track.title)}</div>
+              <div class="track-sub">${escapeHtml(track.artist || 'Audio')} • ${track.size || 'MP3'}</div>
+            </div>
+          </div>
+          <div class="track-actions">
+            <button class="btn-icon" style="width: 32px; height: 32px;" title="${getTranslation('addToPlaylist')}" onclick="event.stopPropagation(); openAddToPlaylistModal('${track.id}')">
+              <svg style="width: 16px; height: 16px;" viewBox="0 0 24 24"><path d="M14 10H2v2h12v-2zm0-4H2v2h12V6zm4 8v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zM2 16h8v-2H2v2z"/></svg>
+            </button>
+            <button class="btn-icon" style="width: 32px; height: 32px;" title="${getTranslation('remove')}" onclick="event.stopPropagation(); removeTrackFromLibrary('${track.id}')">
+              <svg style="width: 16px; height: 16px;" viewBox="0 0 24 24"><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg>
+            </button>
+          </div>
+        `;
+        item.addEventListener('click', () => {
+          currentPlaylistTracks = [...libraryTracks];
+          const realIdx = currentPlaylistTracks.findIndex(t => t.id === track.id);
+          loadTrack(realIdx);
+          audioEl.play().catch(() => {});
+        });
+        libraryTrackList.appendChild(item);
+      });
+    }
+
+    librarySearch.addEventListener('input', renderLibrary);
+
+    function removeTrackFromLibrary(id) {
+      const idx = libraryTracks.findIndex(t => t.id === id);
+      if (idx !== -1) {
+        libraryTracks.splice(idx, 1);
+        playlists.forEach(pl => {
+          pl.trackIds = pl.trackIds.filter(tId => tId !== id);
+        });
+        saveLibraryTracks();
+        savePlaylists();
+        renderLibrary();
+        renderPlaylists();
+        showToast('Lagu dihapus dari pustaka');
+      }
+    }
+
+    // Playlists
+    function renderPlaylists() {
+      playlistContainer.innerHTML = '';
+      if (!playlists.length) {
+        playlistContainer.innerHTML = '<p class="empty-state">Belum ada playlist dibuat.</p>';
+        return;
+      }
+
+      playlists.forEach(pl => {
+        const card = document.createElement('div');
+        card.className = 'glass-card';
+        card.style.padding = '12px';
+
+        const plTracks = libraryTracks.filter(t => pl.trackIds.includes(t.id));
+        card.innerHTML = `
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+            <div>
+              <h4 style="font-size: 1rem;">${escapeHtml(pl.name)}</h4>
+              <span style="font-size: 0.75rem; color: var(--text-muted);">${plTracks.length} lagu</span>
+            </div>
+            <div style="display: flex; gap: 6px;">
+              <button class="btn-action btn-primary-action" style="padding: 6px 12px; font-size: 0.78rem;" onclick="playPlaylist('${pl.id}')">Putar</button>
+              <button class="btn-action btn-secondary-action" style="padding: 6px 8px; font-size: 0.78rem;" onclick="renamePlaylist('${pl.id}')">Ubah</button>
+              <button class="btn-action btn-secondary-action" style="padding: 6px 8px; font-size: 0.78rem; color: #ff5555;" onclick="deletePlaylist('${pl.id}')">✕</button>
+            </div>
+          </div>
+          <div style="display: flex; flex-direction: column; gap: 6px; max-height: 160px; overflow-y: auto;">
+            ${plTracks.length === 0 ? '<p style="font-size: 0.78rem; color: var(--text-muted); padding: 4px 0;">Playlist masih kosong.</p>' : ''}
+            ${plTracks.map(t => `
+              <div style="display: flex; justify-content: space-between; align-items: center; font-size: 0.82rem; padding: 6px 8px; background: rgba(255,255,255,0.03); border-radius: 6px;">
+                <span style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${escapeHtml(t.title)}</span>
+                <button class="btn-icon" style="width: 24px; height: 24px;" onclick="removeTrackFromPlaylist('${pl.id}', '${t.id}')">✕</button>
+              </div>
+            `).join('')}
+          </div>
+        `;
+        playlistContainer.appendChild(card);
+      });
+    }
+
+    btnCreatePlaylist.addEventListener('click', () => {
+      const name = newPlaylistName.value.trim();
+      if (!name) return;
+      playlists.push({
+        id: 'pl_' + Date.now(),
+        name: name,
+        trackIds: []
+      });
+      newPlaylistName.value = '';
+      savePlaylists();
+      renderPlaylists();
+      showToast(`Playlist "${name}" berhasil dibuat`);
+    });
+
+    window.playPlaylist = function(plId) {
+      const pl = playlists.find(p => p.id === plId);
+      if (!pl) return;
+      const tracks = libraryTracks.filter(t => pl.trackIds.includes(t.id));
+      if (!tracks.length) {
+        showToast('Playlist masih kosong! Tambahkan lagu dari menu Pustaka.');
+        return;
+      }
+      currentPlaylistTracks = tracks;
+      loadTrack(0);
+      audioEl.play().catch(() => {});
+      switchView('viewPlayer');
+    };
+
+    window.renamePlaylist = function(plId) {
+      const pl = playlists.find(p => p.id === plId);
+      if (!pl) return;
+      const newName = prompt('Nama playlist baru:', pl.name);
+      if (newName && newName.trim()) {
+        pl.name = newName.trim();
+        savePlaylists();
+        renderPlaylists();
+        showToast('Playlist diperbarui');
+      }
+    };
+
+    window.deletePlaylist = function(plId) {
+      if (confirm('Hapus playlist ini?')) {
+        playlists = playlists.filter(p => p.id !== plId);
+        savePlaylists();
+        renderPlaylists();
+        showToast('Playlist berhasil dihapus');
+      }
+    };
+
+    window.removeTrackFromPlaylist = function(plId, trackId) {
+      const pl = playlists.find(p => p.id === plId);
+      if (pl) {
+        pl.trackIds = pl.trackIds.filter(id => id !== trackId);
+        savePlaylists();
+        renderPlaylists();
+      }
+    };
+
+    // Add to Playlist Modal
+    let pendingTrackId = null;
+    window.openAddToPlaylistModal = function(trackId) {
+      pendingTrackId = trackId;
+      const modal = document.getElementById('playlistModal');
+      const list = document.getElementById('modalTrackSelectionList');
+      list.innerHTML = '';
+
+      if (!playlists.length) {
+        list.innerHTML = '<p style="color: var(--text-muted); font-size: 0.85rem;">Belum ada playlist. Buat playlist terlebih dahulu!</p>';
+      } else {
+        playlists.forEach(pl => {
+          const btn = document.createElement('button');
+          btn.className = 'btn-action btn-secondary-action';
+          btn.style.textAlign = 'left';
+          btn.style.padding = '10px';
+          const alreadyIn = pl.trackIds.includes(trackId);
+          btn.textContent = pl.name + (alreadyIn ? ' (Sudah ada)' : '');
+          btn.disabled = alreadyIn;
+          btn.onclick = () => {
+            if (!pl.trackIds.includes(trackId)) {
+              pl.trackIds.push(trackId);
+              savePlaylists();
+              renderPlaylists();
+              showToast(`Lagu ditambahkan ke ${pl.name}`);
+            }
+            modal.classList.remove('open');
+          };
+          list.appendChild(btn);
+        });
+      }
+      modal.classList.add('open');
+    };
+
+    document.getElementById('btnCancelModal').addEventListener('click', () => {
+      document.getElementById('playlistModal').classList.remove('open');
+    });
+
+    // =========================================================================
+    // 5. VIEW SWITCHING & RESPONSIVE NAVIGATION
+    // =========================================================================
+    function switchView(viewId) {
+      document.querySelectorAll('.tab-item').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.view === viewId);
+      });
+
+      document.querySelectorAll('.view-panel').forEach(panel => {
+        panel.classList.toggle('active', panel.id === viewId);
+      });
+    }
+
+    document.querySelectorAll('.tab-item').forEach(btn => {
+      btn.addEventListener('click', () => {
+        switchView(btn.dataset.view);
+      });
+    });
+
+    miniPlayerBar.addEventListener('click', () => {
+      switchView('viewPlayer');
+    });
+
+    // =========================================================================
+    // 6. THEMES & COLOR PICKERS
+    // =========================================================================
+    const primaryColorPicker = document.getElementById('primaryColorPicker');
+    const bgColorPicker = document.getElementById('bgColorPicker');
+    const cardColorPicker = document.getElementById('cardColorPicker');
+    const btnThemeToggle = document.getElementById('btnThemeToggle');
+
+    function updateColors(primary, bg, card) {
+      document.documentElement.style.setProperty('--primary-color', primary);
+      document.documentElement.style.setProperty('--primary-gradient', `linear-gradient(135deg, ${primary} 0%, #0077ff 100%)`);
+      document.documentElement.style.setProperty('--accent-glow', primary + '55');
+      if (bg) document.documentElement.style.setProperty('--bg-color', bg);
+      if (card) document.documentElement.style.setProperty('--card-bg', card);
+    }
+
+    primaryColorPicker.addEventListener('input', (e) => {
+      updateColors(e.target.value, null, null);
+      saveThemeState(e.target.value, bgColorPicker.value, cardColorPicker.value, document.body.classList.contains('light-theme'));
+    });
+    bgColorPicker.addEventListener('input', (e) => {
+      updateColors(primaryColorPicker.value, e.target.value, null);
+      saveThemeState(primaryColorPicker.value, e.target.value, cardColorPicker.value, document.body.classList.contains('light-theme'));
+    });
+    cardColorPicker.addEventListener('input', (e) => {
+      updateColors(primaryColorPicker.value, null, e.target.value);
+      saveThemeState(primaryColorPicker.value, bgColorPicker.value, e.target.value, document.body.classList.contains('light-theme'));
+    });
+
+    window.applyThemePreset = function(primary, bg, card, isLight) {
+      document.body.classList.toggle('light-theme', isLight);
+      primaryColorPicker.value = primary;
+      bgColorPicker.value = bg;
+      cardColorPicker.value = card.startsWith('#') ? card : '#121826';
+      updateColors(primary, bg, card);
+      saveThemeState(primary, bg, card, isLight);
+      showToast('Tema berhasil diterapkan');
+    };
+
+    btnThemeToggle.addEventListener('click', () => {
+      const isLight = document.body.classList.toggle('light-theme');
+      saveThemeState(primaryColorPicker.value, bgColorPicker.value, cardColorPicker.value, isLight);
+    });
+
+    // =========================================================================
+    // 7. MULTI-LANGUAGE SYSTEM
+    // =========================================================================
+    function getTranslation(key) {
+      const langSet = translations[currentLang] || translations.id;
+      return langSet[key] || translations.id[key] || key;
+    }
+
+    function applyTranslations() {
+      document.getElementById('headerAppName').textContent = userAppName;
+      document.getElementById('lblOfflineStatus').textContent = getTranslation('offlineStatus');
+      document.getElementById('txtNavPlayer').textContent = getTranslation('navPlayer');
+      document.getElementById('txtNavLibrary').textContent = getTranslation('navLibrary');
+      document.getElementById('txtNavPlaylists').textContent = getTranslation('navPlaylists');
+      document.getElementById('txtNavEqualizer').textContent = getTranslation('navEqualizer');
+      document.getElementById('txtNavSettings').textContent = getTranslation('navSettings');
+      document.getElementById('txtBtnScanHeader').textContent = getTranslation('btnScanHeader');
+      document.getElementById('lblScanAction').textContent = getTranslation('scanAction');
+      document.getElementById('lblAddFiles').textContent = getTranslation('addFiles');
+      document.getElementById('lblAddDemo').textContent = getTranslation('addDemo');
+      document.getElementById('txtEmptyLibrary').textContent = getTranslation('emptyLibrary');
+      document.getElementById('librarySearch').placeholder = getTranslation('searchPlaceholder');
+      document.getElementById('lblCreatePlaylist').textContent = getTranslation('createPlaylist');
+      document.getElementById('newPlaylistName').placeholder = getTranslation('newPlaylistPlaceholder');
+      document.getElementById('lblEqPresets').textContent = getTranslation('eqPresets');
+      document.getElementById('lblResetEq').textContent = getTranslation('resetEq');
+      document.getElementById('lblThemePresets').textContent = getTranslation('themePresets');
+      document.getElementById('lblCustomColors').textContent = getTranslation('customColors');
+      document.getElementById('lblPrimaryCol').textContent = getTranslation('primaryCol');
+      document.getElementById('lblBgCol').textContent = getTranslation('bgCol');
+      document.getElementById('lblCardCol').textContent = getTranslation('cardCol');
+      document.getElementById('lblLanguage').textContent = getTranslation('language');
+      document.getElementById('lblCustomLabels').textContent = getTranslation('customLabels');
+      document.getElementById('lblSaveOverrides').textContent = getTranslation('saveOverrides');
+      const lblEqTip = document.getElementById('lblEqTip');
+      if (lblEqTip) lblEqTip.textContent = getTranslation('eqTip');
+    }
+
+    const langIdBtn = document.getElementById('langIdBtn');
+    const langEnBtn = document.getElementById('langEnBtn');
+
+    langIdBtn.addEventListener('click', () => {
+      currentLang = 'id';
+      langIdBtn.classList.add('active');
+      langEnBtn.classList.remove('active');
+      try { localStorage.setItem('nanang_lang', 'id'); } catch (e) {}
+      applyTranslations();
+      showToast('Bahasa diubah ke Bahasa Indonesia');
+    });
+
+    langEnBtn.addEventListener('click', () => {
+      currentLang = 'en';
+      langEnBtn.classList.add('active');
+      langIdBtn.classList.remove('active');
+      try { localStorage.setItem('nanang_lang', 'en'); } catch (e) {}
+      applyTranslations();
+      showToast('Language switched to English');
+    });
+
+    document.getElementById('btnSaveLabelOverrides').addEventListener('click', () => {
+      const val = document.getElementById('overrideAppName').value.trim();
+      if (val) {
+        userAppName = val;
+        document.getElementById('headerAppName').textContent = val;
+        try { localStorage.setItem('nanang_app_name', val); } catch (e) {}
+        showToast('Nama aplikasi berhasil disimpan!');
+      }
+    });
+
+    function escapeHtml(str) {
+      if (!str) return '';
+      return String(str)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+    }
+
+    // =========================================================================
+    // INITIALIZATION & AUTO-SCAN ON LAUNCH
+    // =========================================================================
+    window.addEventListener('DOMContentLoaded', () => {
+      initEqualizerFaders();
+      loadSavedState();
+      applyTranslations();
+      renderPlaylists();
+      renderLibrary();
+
+      // Trigger automatic audio scanner on launch
+      if (window.AndroidBridge && typeof window.AndroidBridge.scanAudioFiles === 'function') {
+        setTimeout(() => {
+          triggerAudioScan(true);
+        }, 500);
+      }
+    });
+  </script>
+</body>
+</html>
